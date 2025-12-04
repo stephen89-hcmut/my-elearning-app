@@ -1,0 +1,33 @@
+{
+  "name": "educore-elearning",
+  "version": "0.0.1",
+  "description": "EduCore E-learning Dashboard - Frontend & Backend Monorepo",
+  "scripts": {
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "dev": "concurrently \"npm:dev:client\" \"npm:dev:server\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run start:dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "start:server": "cd server && npm run start:prod",
+    "lint": "npm run lint:client && npm run lint:server",
+    "lint:client": "cd client && npm run lint",
+    "lint:server": "cd server && npm run lint",
+    "test": "npm run test:client && npm run test:server",
+    "test:client": "cd client && npm run test",
+    "test:server": "cd server && npm run test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "elearning",
+    "dashboard",
+    "react",
+    "nestjs",
+    "mysql"
+  ],
+  "author": "Stephen",
+  "license": "MIT"
+}
