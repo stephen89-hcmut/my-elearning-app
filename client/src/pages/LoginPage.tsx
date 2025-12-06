@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Row, Col, message, Spin } from 'antd';
+import { Form, Input, Button, Card, message, Spin } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -33,91 +33,93 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="login-container">
-      <Row justify="center" align="middle" style={{ minHeight: '100vh' }}>
-        <Col xs={22} sm={18} md={12} lg={8}>
-          <Card className="login-card">
-            {/* Logo and Title */}
-            <div className="login-header">
-              <div className="logo">📚</div>
-              <h1 className="logo-text">EduCore</h1>
-              <p className="logo-subtitle">E-Learning Management System</p>
-            </div>
+      <div className="login-wrapper">
+        <Card className="login-card" bordered={false}>
+          {/* Logo and Title */}
+          <div className="login-header">
+            <div className="logo-icon">📚</div>
+            <h1 className="logo-text">EduCore</h1>
+            <p className="logo-subtitle">E-Learning<br />Management<br />System</p>
+          </div>
 
-            {/* Login Form */}
-            <Spin spinning={loading}>
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSubmit}
-                requiredMark="optional"
+          {/* Login Form */}
+          <Spin spinning={loading}>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleSubmit}
+              requiredMark={false}
+              autoComplete="off"
+            >
+              <Form.Item
+                label="Username"
+                name="username"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập username' },
+                  { min: 3, message: 'Username phải từ 3 ký tự trở lên' },
+                ]}
               >
-                <Form.Item
-                  label="Username"
-                  name="username"
-                  rules={[
-                    { required: true, message: 'Vui lòng nhập username' },
-                    { min: 3, message: 'Username phải từ 3 ký tự trở lên' },
-                  ]}
-                >
-                  <Input
-                    placeholder="Enter your username"
-                    prefix={<UserOutlined />}
-                    size="large"
-                  />
-                </Form.Item>
+                <Input
+                  placeholder="Enter your username"
+                  prefix={<UserOutlined />}
+                  size="large"
+                  className="login-input"
+                />
+              </Form.Item>
 
-                <Form.Item
-                  label="Password"
-                  name="password"
-                  rules={[{ required: true, message: 'Vui lòng nhập password' }]}
-                >
-                  <Input.Password
-                    placeholder="Enter your password"
-                    prefix={<LockOutlined />}
-                    size="large"
-                  />
-                </Form.Item>
+              <Form.Item
+                label="Password"
+                name="password"
+                rules={[{ required: true, message: 'Vui lòng nhập password' }]}
+              >
+                <Input.Password
+                  placeholder="Enter your password"
+                  prefix={<LockOutlined />}
+                  size="large"
+                  className="login-input"
+                />
+              </Form.Item>
 
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    block
-                    size="large"
-                    loading={loading}
-                  >
-                    Sign In
-                  </Button>
-                </Form.Item>
-              </Form>
-
-              {/* Demo Account Section */}
-              <div className="demo-account">
-                <h4>Demo Account</h4>
-                <div className="demo-credentials">
-                  <div className="credential-row">
-                    <label>Username:</label>
-                    <code>sManager</code>
-                  </div>
-                  <div className="credential-row">
-                    <label>Password:</label>
-                    <code>password123</code>
-                  </div>
-                </div>
+              <Form.Item style={{ marginTop: '24px' }}>
                 <Button
-                  type="default"
+                  type="primary"
+                  htmlType="submit"
                   block
                   size="large"
-                  onClick={fillDemoAccount}
-                  style={{ marginTop: '12px' }}
+                  loading={loading}
+                  className="login-button"
                 >
-                  Use Demo Account
+                  Sign In
                 </Button>
+              </Form.Item>
+            </Form>
+
+            {/* Demo Account Section */}
+            <div className="demo-account">
+              <h4>Demo Account</h4>
+              <div className="demo-credentials">
+                <div className="credential-row">
+                  <span className="credential-label">Username:</span>
+                  <span className="credential-value">sManager</span>
+                </div>
+                <div className="credential-row">
+                  <span className="credential-label">Password:</span>
+                  <span className="credential-value">password123</span>
+                </div>
               </div>
-            </Spin>
-          </Card>
-        </Col>
-      </Row>
+              <Button
+                type="default"
+                block
+                size="large"
+                onClick={fillDemoAccount}
+                className="demo-button"
+              >
+                Use Demo Account
+              </Button>
+            </div>
+          </Spin>
+        </Card>
+      </div>
     </div>
   );
 };

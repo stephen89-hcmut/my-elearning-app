@@ -4,12 +4,22 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  padding: 20px;
+}
+
+.login-wrapper {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  justify-content: center;
 }
 
 .login-card {
+  width: 100%;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   border-radius: 12px;
-  padding: 40px;
+  padding: 48px 40px 40px 40px;
+  background: #fff;
 }
 
 .login-header {
@@ -17,34 +27,55 @@
   margin-bottom: 32px;
 }
 
-.logo {
-  font-size: 48px;
+.logo-icon {
+  font-size: 56px;
   line-height: 1;
   margin-bottom: 16px;
+  display: inline-block;
 }
 
 .logo-text {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   margin: 0;
   color: #1890ff;
+  letter-spacing: 0.5px;
 }
 
 .logo-subtitle {
-  font-size: 14px;
-  color: #8c8c8c;
-  margin: 8px 0 0 0;
+  font-size: 13px;
+  color: #999;
+  margin: 12px 0 0 0;
+  line-height: 1.6;
+}
+
+.login-input {
+  border-radius: 6px;
+}
+
+.login-button {
+  height: 44px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+.login-button:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6d3e8e 100%) !important;
 }
 
 .demo-account {
   background: #f5f7fa;
   border-radius: 8px;
   padding: 16px;
-  margin-top: 24px;
+  margin-top: 28px;
+  border: 1px solid #e8eef5;
 }
 
 .demo-account h4 {
-  margin: 0 0 12px 0;
+  margin: 0 0 14px 0;
   font-size: 14px;
   font-weight: 600;
   color: #1890ff;
@@ -53,7 +84,8 @@
 .demo-credentials {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .credential-row {
@@ -61,18 +93,48 @@
   justify-content: space-between;
   align-items: center;
   font-size: 13px;
+  gap: 10px;
 }
 
-.credential-row label {
+.credential-label {
   color: #595959;
   font-weight: 500;
+  flex: 0 0 auto;
 }
 
-.credential-row code {
+.credential-value {
   background: #fff;
-  padding: 2px 8px;
+  padding: 4px 12px;
   border-radius: 4px;
   color: #1890ff;
   font-weight: 600;
   border: 1px solid #d9d9d9;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  text-align: right;
+}
+
+.demo-button {
+  border-radius: 6px;
+  height: 40px;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .login-card {
+    padding: 36px 28px 28px 28px;
+  }
+  
+  .logo-text {
+    font-size: 28px;
+  }
+  
+  .logo-icon {
+    font-size: 48px;
+  }
+  
+  .logo-subtitle {
+    font-size: 12px;
+  }
 }

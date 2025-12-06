@@ -13,20 +13,43 @@ import {
   Statistic,
   Progress,
   Button,
+  Spin,
+  Alert,
 } from 'antd';
 import {
   SearchOutlined,
   MailOutlined,
 } from '@ant-design/icons';
-import { mockStudents, mockInstructors } from '@/mock/courses';
+import { useQuery } from '@tanstack/react-query';
+import { getStudents, getInstructors } from '@/api/courses';
 import { Student, Instructor } from '@/types';
 
 const StudentsPage: React.FC = () => {
   const [studentsSearch, setStudentsSearch] = useState('');
   const [instructorsSearch, setInstructorsSearch] = useState('');
 
+  // Fetch students from API
+  const {
+    data: studentsData = { data: [] },
+    isLoading: isStudentsLoading,
+    error: studentsError,
+  } = useQuery({
+    queryKey: ['students'],
+    queryFn: () => getStudents(),
+  });
+
+  // Fetch instructors from API
+  const {
+    data: instructorsData = { data: [] },
+    isLoading: isInstructorsLoading,
+    error: instructorsError,
+  } = useQuery({
+    queryKey: ['instructors'],
+    queryFn: () => getInstructors(),
+  });
+
   // Filter students
-  const filteredStudents = mockStudents.filter((student) => {
+  const filteredStudents = (studentsData?.data || []).filter((student: Student) => {
     const searchLower = studentsSearch.toLowerCase();
     const user = student.user;
     if (!user) return false;
@@ -39,7 +62,7 @@ const StudentsPage: React.FC = () => {
   });
 
   // Filter instructors
-  const filteredInstructors = mockInstructors.filter((instructor) => {
+  const filteredInstructors = (instructorsData?.data || []).filter((instructor: Instructor) => {
     const searchLower = instructorsSearch.toLowerCase();
     const user = instructor.user;
     if (!user) return false;
@@ -197,12 +220,30 @@ const StudentsPage: React.FC = () => {
     },
   ];
 
-  const totalStudents = mockStudents.length;
-  const activeStudents = mockStudents.filter(s => s.status === 'active').length;
+  const totalStudents = studentsData?.data?.length || 0;
+  const activeStudents = (studentsData?.data || []).filter((s: Student) => s.status === 'active').length;
 
   return (
     <div style={{ padding: 24 }}>
       <h1 style={{ marginBottom: 24 }}>Students & Instructors</h1>
+
+      {/* Error alerts */}
+      {studentsError && (
+        <Alert
+          message="Failed to load students"
+          type="error"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
+      {instructorsError && (
+        <Alert
+          message="Failed to load instructors"
+          type="error"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
 
       {/* Statistics */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
@@ -213,6 +254,7 @@ const StudentsPage: React.FC = () => {
               value={totalStudents}
               valueStyle={{ color: '#1890ff' }}
               prefix="👨‍🎓"
+              loading={isStudentsLoading}
             />
           </Card>
         </Col>
@@ -223,28 +265,30 @@ const StudentsPage: React.FC = () => {
               value={activeStudents}
               valueStyle={{ color: '#52c41a' }}
               prefix="✅"
+              loading={isStudentsLoading}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="Avg Courses/Student"
-              value={2.7}
+              title="Total Instructors"
+              value={instructorsData?.data?.length || 0}
               valueStyle={{ color: '#faad14' }}
-              prefix="📚"
-              precision={1}
+              prefix="👨‍🏫"
+              loading={isInstructorsLoading}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="Completion Rate"
-              value={30}
-              suffix="%"
+              title="Avg Rating"
+              value={4.5}
+              suffix="/5"
               valueStyle={{ color: '#722ed1' }}
-              prefix="📊"
+              prefix="⭐"
+              precision={1}
             />
           </Card>
         </Col>
@@ -252,69 +296,71 @@ const StudentsPage: React.FC = () => {
 
       {/* Tables */}
       <Card>
-        <Tabs
-          defaultActiveKey="students"
-          items={[
-            {
-              key: 'students',
-              label: `Students (${filteredStudents.length})`,
-              children: (
-                <div>
-                  <Space style={{ marginBottom: 16, display: 'flex' }}>
-                    <Input
-                      placeholder="Search students..."
-                      prefix={<SearchOutlined />}
-                      value={studentsSearch}
-                      onChange={(e) => setStudentsSearch(e.target.value)}
-                      style={{ width: 300 }}
+        <Spin spinning={isStudentsLoading || isInstructorsLoading}>
+          <Tabs
+            defaultActiveKey="students"
+            items={[
+              {
+                key: 'students',
+                label: `Students (${filteredStudents.length})`,
+                children: (
+                  <div>
+                    <Space style={{ marginBottom: 16, display: 'flex' }}>
+                      <Input
+                        placeholder="Search students..."
+                        prefix={<SearchOutlined />}
+                        value={studentsSearch}
+                        onChange={(e) => setStudentsSearch(e.target.value)}
+                        style={{ width: 300 }}
+                      />
+                      <Button type="primary">+ Add Student</Button>
+                    </Space>
+                    <Table<Student>
+                      columns={studentColumns as any}
+                      dataSource={filteredStudents}
+                      rowKey="studentId"
+                      pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showTotal: (total, range) =>
+                          `Showing ${range[0]}-${range[1]} of ${total}`,
+                      }}
                     />
-                    <Button type="primary">+ Add Student</Button>
-                  </Space>
-                  <Table
-                    columns={studentColumns}
-                    dataSource={filteredStudents}
-                    rowKey="studentId"
-                    pagination={{
-                      pageSize: 10,
-                      showSizeChanger: true,
-                      showTotal: (total, range) =>
-                        `Showing ${range[0]}-${range[1]} of ${total}`,
-                    }}
-                  />
-                </div>
-              ),
-            },
-            {
-              key: 'instructors',
-              label: `Instructors (${filteredInstructors.length})`,
-              children: (
-                <div>
-                  <Space style={{ marginBottom: 16, display: 'flex' }}>
-                    <Input
-                      placeholder="Search instructors..."
-                      prefix={<SearchOutlined />}
-                      value={instructorsSearch}
-                      onChange={(e) => setInstructorsSearch(e.target.value)}
-                      style={{ width: 300 }}
+                  </div>
+                ),
+              },
+              {
+                key: 'instructors',
+                label: `Instructors (${filteredInstructors.length})`,
+                children: (
+                  <div>
+                    <Space style={{ marginBottom: 16, display: 'flex' }}>
+                      <Input
+                        placeholder="Search instructors..."
+                        prefix={<SearchOutlined />}
+                        value={instructorsSearch}
+                        onChange={(e) => setInstructorsSearch(e.target.value)}
+                        style={{ width: 300 }}
+                      />
+                      <Button type="primary">+ Add Instructor</Button>
+                    </Space>
+                    <Table<Instructor>
+                      columns={instructorColumns as any}
+                      dataSource={filteredInstructors}
+                      rowKey="instructorId"
+                      pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showTotal: (total, range) =>
+                          `Showing ${range[0]}-${range[1]} of ${total}`,
+                      }}
                     />
-                    <Button type="primary">+ Add Instructor</Button>
-                  </Space>
-                  <Table
-                    columns={instructorColumns}
-                    dataSource={filteredInstructors}
-                    rowKey="instructorId"
-                    pagination={{
-                      pageSize: 10,
-                      showSizeChanger: true,
-                      showTotal: (total, range) =>
-                        `Showing ${range[0]}-${range[1]} of ${total}`,
-                    }}
-                  />
-                </div>
-              ),
-            },
-          ]}
-        />
+                  </div>
+                ),
+              },
+            ]}
+          />
+        </Spin>
       </Card>
     </div>
   );

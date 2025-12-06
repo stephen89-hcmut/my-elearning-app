@@ -1,10 +1,10 @@
 // src/pages/CoursesPage.tsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { message, Button, Form } from 'antd';
+import { message, Button, Form, Alert } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { CourseTable, CourseFormModal, CourseDetailModal } from '@/components';
-import { getCourses, deleteCourse, createCourse, updateCourse, getTopicsDemo } from '@/api/courses';
+import { getCourses, deleteCourse, createCourse, updateCourse, getTopics } from '@/api/courses';
 import { CreateCourseDto, UpdateCourseDto } from '@/types';
 
 const CoursesPage: React.FC = () => {
@@ -16,14 +16,14 @@ const CoursesPage: React.FC = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
-  const { data: coursesData, isLoading } = useQuery({
+  const { data: coursesData, isLoading, error: coursesError } = useQuery({
     queryKey: ['courses', page, limit],
     queryFn: () => getCourses(page, limit),
   });
 
   const { data: topicsData = [] } = useQuery({
     queryKey: ['topics'],
-    queryFn: () => getTopicsDemo(),
+    queryFn: () => getTopics(),
   });
 
   const createCourseMutation = useMutation({
@@ -113,6 +113,16 @@ const CoursesPage: React.FC = () => {
           Create Course
         </Button>
       </div>
+
+      {coursesError && (
+        <Alert
+          message="Failed to load courses"
+          description="Please ensure the backend API is running."
+          type="error"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
 
       <CourseTable
         courses={coursesData?.data || []}
