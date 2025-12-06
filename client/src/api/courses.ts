@@ -24,21 +24,20 @@ apiClient.interceptors.request.use((config) => {
 
 // ======== COURSES API ========
 export const getCourses = async (
-  skip: number = 0,
-  take: number = 10,
-  topic?: string,
-  level?: string,
+  page: number = 1,
+  limit: number = 10,
 ): Promise<PaginatedResponse<Course>> => {
   try {
     const response = await apiClient.get('/courses', {
-      params: { skip, take, topic, level },
+      params: { page, limit },
     });
+    const { data, total } = response.data;
     return {
-      data: response.data,
-      total: response.data.length,
-      page: Math.floor(skip / take) + 1,
-      limit: take,
-      totalPages: Math.ceil((response.data.length || 0) / take),
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil((total || 0) / limit),
     };
   } catch (error) {
     console.error('Error fetching courses:', error);
@@ -90,7 +89,7 @@ export const deleteCourse = async (courseId: number): Promise<void> => {
 
 export const getTopics = async (): Promise<Topic[]> => {
   try {
-    const response = await apiClient.get('/topics');
+    const response = await apiClient.get('/courses/topics');
     return response.data;
   } catch (error) {
     console.error('Error fetching topics:', error);
@@ -102,16 +101,12 @@ export const getTopics = async (): Promise<Topic[]> => {
 export const getStudents = async (
   page: number = 1,
   limit: number = 10,
-  status?: string,
-): Promise<{ data: Student[]; total: number }> => {
+): Promise<{ data: Student[]; total: number; page: number; limit: number; totalPages: number }> => {
   try {
     const response = await apiClient.get('/users/students', {
-      params: { page, limit, status },
+      params: { page, limit },
     });
-    return {
-      data: response.data,
-      total: response.data.length,
-    };
+    return response.data;
   } catch (error) {
     console.error('Error fetching students:', error);
     throw error;
@@ -122,15 +117,12 @@ export const getStudents = async (
 export const getInstructors = async (
   page: number = 1,
   limit: number = 10,
-): Promise<{ data: Instructor[]; total: number }> => {
+): Promise<{ data: Instructor[]; total: number; page: number; limit: number; totalPages: number }> => {
   try {
     const response = await apiClient.get('/users/instructors', {
       params: { page, limit },
     });
-    return {
-      data: response.data,
-      total: response.data.length,
-    };
+    return response.data;
   } catch (error) {
     console.error('Error fetching instructors:', error);
     throw error;

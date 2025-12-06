@@ -18,4 +18,12 @@ export class UsersController {
   ) {
     return this.usersService.getStudents(page, limit);
   }
+
+  @Get('instructors')
+  getInstructors(
+    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+  ) {
+    return this.usersService.getInstructors(page, limit);
+  }
 }

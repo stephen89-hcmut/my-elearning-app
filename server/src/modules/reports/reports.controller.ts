@@ -11,8 +11,23 @@ export class ReportsController {
     return this.reportsService.getDashboardStats();
   }
 
+  // Alias to match frontend call /reports/statistics
+  @Get('statistics')
+  getDashboardStatsAlias() {
+    return this.reportsService.getDashboardStats();
+  }
+
   @Get('monthly-revenue')
   getMonthlyRevenue(
+    @Query('month', new ParseIntPipe({ optional: true })) month?: number,
+    @Query('year', new ParseIntPipe({ optional: true })) year?: number,
+  ) {
+    return this.reportsService.getMonthlyRevenue(month, year);
+  }
+
+  // Alias to match frontend call /reports/revenue
+  @Get('revenue')
+  getRevenueAlias(
     @Query('month', new ParseIntPipe({ optional: true })) month?: number,
     @Query('year', new ParseIntPipe({ optional: true })) year?: number,
   ) {

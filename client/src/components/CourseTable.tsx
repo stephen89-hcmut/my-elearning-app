@@ -75,7 +75,10 @@ const CourseTable: React.FC<CourseTableProps> = ({
       title: 'Price',
       dataIndex: 'price',
       key: 'price',
-      render: (price: number) => `$${price.toFixed(2)}`,
+      render: (price: number) => {
+        const numericPrice = Number(price) || 0;
+        return `$${numericPrice.toFixed(2)}`;
+      },
     },
     {
       title: 'Status',

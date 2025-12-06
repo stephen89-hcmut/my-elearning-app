@@ -11,6 +11,10 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  const fillAdminDemo = () => {
+    form.setFieldsValue({ username: 'admin_hcmut', password: '123456' });
+  };
+
   const handleSubmit = async (values: { username: string; password: string }) => {
     setLoading(true);
     try {
@@ -44,6 +48,15 @@ const LoginPage: React.FC = () => {
               requiredMark={false}
               autoComplete="off"
             >
+              <div style={{ marginBottom: 12, background: '#f6ffed', border: '1px solid #b7eb8f', padding: 12, borderRadius: 8 }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Tài khoản demo</div>
+                <div style={{ fontSize: 12 }}>Username: <code>admin_hcmut</code></div>
+                <div style={{ fontSize: 12, marginBottom: 8 }}>Password: <code>123456</code></div>
+                <Button type="link" size="small" onClick={fillAdminDemo} style={{ paddingLeft: 0 }}>
+                  Điền nhanh admin
+                </Button>
+              </div>
+
               <Form.Item
                 label="Username"
                 name="username"
