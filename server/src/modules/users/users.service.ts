@@ -1,5 +1,5 @@
 // src/modules/users/users.service.ts
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
@@ -8,7 +8,7 @@ import { CreateUserDto } from './dto';
 import { UserRole } from '@/common/enums';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit {
   // Mock data storage (temporary - will be replaced with database)
   private mockStudents: Student[] = [
     {
@@ -133,6 +133,50 @@ export class UsersService {
     @InjectRepository(Admin)
     private adminsRepository: Repository<Admin>,
   ) {}
+
+  async onModuleInit() {
+    await this.ensureDefaultAdmin();
+  }
+
+  private async ensureDefaultAdmin() {
+    try {
+      const defaultPassword = '123456';
+      const admin = await this.usersRepository.findOne({ where: { username: 'admin_hcmut' }, withDeleted: false });
+
+      // If not exists, create new with hashed password
+      if (!admin) {
+        const hashed = await bcrypt.hash(defaultPassword, 10);
+        const created = await this.usersRepository.save({
+          username: 'admin_hcmut',
+          email: 'admin_hcmut@example.com',
+          firstName: 'Admin',
+          lastName: 'HCMUT',
+          password: hashed,
+          role: UserRole.ADMIN,
+        });
+        await this.adminsRepository.save({ adminId: created.userId, user: created });
+        Logger.log('Default admin user created: admin_hcmut / 123456');
+        return;
+      }
+
+      // If exists but password is not bcrypt (plaintext), re-hash default password
+      const looksHashed = typeof admin.password === 'string' && admin.password.startsWith('$2');
+      if (!looksHashed) {
+        const hashed = await bcrypt.hash(defaultPassword, 10);
+        await this.usersRepository.update({ userId: admin.userId }, { password: hashed, role: UserRole.ADMIN });
+        Logger.log('Default admin password was plaintext; re-hashed to bcrypt');
+      }
+
+      // Ensure role and admin record
+      if (admin.role !== UserRole.ADMIN) {
+        await this.usersRepository.update({ userId: admin.userId }, { role: UserRole.ADMIN });
+      }
+      await this.adminsRepository.upsert({ adminId: admin.userId, user: admin }, ['adminId']);
+      Logger.log('Default admin user ensured: admin_hcmut / 123456');
+    } catch (error) {
+      Logger.error('Failed to ensure default admin user', error?.message || error);
+    }
+  }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.usersRepository.findOne({

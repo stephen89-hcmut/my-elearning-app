@@ -16,7 +16,7 @@ export class Student {
   @PrimaryColumn({ name: 'student_id' })
   studentId: number;
 
-  @Column({ name: 'enrollment_date', default: () => 'CURRENT_DATE' })
+  @Column({ name: 'enrollment_date', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   enrollmentDate: Date;
 
   @CreateDateColumn({ name: 'created_at' })

@@ -1,155 +1,159 @@
 // src/api/courses.ts
-// import axios from 'axios';
-import { Course, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic } from '@/types';
-import { mockCourses, mockDashboardStats, mockMonthlyRevenue } from '@/mock/courses';
+import axios from 'axios';
+import { Course, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic, Student, Instructor } from '@/types';
 
-// const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-// Simulating network delay
-const simulateDelay = (ms: number = 500) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+// Create axios instance with default config
+const apiClient = axios.create({
+  baseURL: API_BASE,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-const mockTopics: Topic[] = [
-  { topicId: 1, topicName: 'Computer Science', description: 'CS fundamentals' },
-  { topicId: 2, topicName: 'Business', description: 'Business fundamentals' },
-  { topicId: 3, topicName: 'Design', description: 'Design and UX' },
-  { topicId: 4, topicName: 'Marketing', description: 'Marketing strategies' },
-  { topicId: 5, topicName: 'Development', description: 'Software development' },
-];
+// Add token to requests
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-// ======== GIAI ĐOẠN 1: MOCK DATA ========
-export const getCoursesDemo = async (
-  page: number = 1,
-  limit: number = 10,
-): Promise<PaginatedResponse<Course>> => {
-  await simulateDelay();
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  return {
-    data: mockCourses.slice(start, end),
-    total: mockCourses.length,
-    page,
-    limit,
-    totalPages: Math.ceil(mockCourses.length / limit),
-  };
-};
-
-export const getCourseByIdDemo = async (courseId: number): Promise<Course> => {
-  await simulateDelay();
-  const course = mockCourses.find((c) => c.courseId === courseId);
-  if (!course) throw new Error('Course not found');
-  return course;
-};
-
-export const createCourseDemo = async (data: CreateCourseDto): Promise<Course> => {
-  await simulateDelay();
-  const newCourse: Course = {
-    courseId: Math.max(...mockCourses.map((c) => c.courseId)) + 1,
-    courseName: data.courseName,
-    description: data.description || '',
-    language: data.language,
-    price: data.price,
-    minScore: data.minScore || 50,
-    level: data.level || 0,
-    totalLectures: 0,
-    topics: mockTopics.filter((t) => data.topicIds?.includes(t.topicId)),
-  };
-  mockCourses.push(newCourse);
-  return newCourse;
-};
-
-export const updateCourseDemo = async (
-  courseId: number,
-  data: UpdateCourseDto,
-): Promise<Course> => {
-  await simulateDelay();
-  const course = mockCourses.find((c) => c.courseId === courseId);
-  if (!course) throw new Error('Course not found');
-  Object.assign(course, data);
-  return course;
-};
-
-export const deleteCourseDemmo = async (courseId: number): Promise<void> => {
-  await simulateDelay();
-  const index = mockCourses.findIndex((c) => c.courseId === courseId);
-  if (index === -1) throw new Error('Course not found');
-  mockCourses.splice(index, 1);
-};
-
-export const getDashboardStatsDemo = async () => {
-  await simulateDelay();
-  return mockDashboardStats;
-};
-
-export const getMonthlyRevenueDemo = async () => {
-  await simulateDelay();
-  return mockMonthlyRevenue;
-};
-
-export const getTopicsDemo = async (): Promise<Topic[]> => {
-  await simulateDelay();
-  return [
-    { topicId: 1, topicName: 'Computer Science', description: 'CS fundamentals' },
-    { topicId: 2, topicName: 'Business', description: 'Business fundamentals' },
-    { topicId: 3, topicName: 'Design', description: 'Design and UX' },
-    { topicId: 4, topicName: 'Marketing', description: 'Marketing strategies' },
-    { topicId: 5, topicName: 'Development', description: 'Software development' },
-  ];
-};
-
-// ======== GIAI ĐOẠN 2-3: REAL API (Uncomment khi backend ready) ========
-/*
+// ======== COURSES API ========
 export const getCourses = async (
-  page: number = 1,
-  limit: number = 10,
+  skip: number = 0,
+  take: number = 10,
   topic?: string,
   level?: string,
 ): Promise<PaginatedResponse<Course>> => {
-  const res = await axios.get(`${API_BASE}/courses`, {
-    params: { page, limit, topic, level },
-  });
-  return res.data;
+  try {
+    const response = await apiClient.get('/courses', {
+      params: { skip, take, topic, level },
+    });
+    return {
+      data: response.data,
+      total: response.data.length,
+      page: Math.floor(skip / take) + 1,
+      limit: take,
+      totalPages: Math.ceil((response.data.length || 0) / take),
+    };
+  } catch (error) {
+    console.error('Error fetching courses:', error);
+    throw error;
+  }
 };
 
 export const getCourseById = async (courseId: number): Promise<Course> => {
-  const res = await axios.get(`${API_BASE}/courses/${courseId}`);
-  return res.data;
+  try {
+    const response = await apiClient.get(`/courses/${courseId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching course:', error);
+    throw error;
+  }
 };
 
 export const createCourse = async (data: CreateCourseDto): Promise<Course> => {
-  const res = await axios.post(`${API_BASE}/courses`, data);
-  return res.data;
+  try {
+    const response = await apiClient.post('/courses', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating course:', error);
+    throw error;
+  }
 };
 
 export const updateCourse = async (
   courseId: number,
   data: UpdateCourseDto,
 ): Promise<Course> => {
-  const res = await axios.put(`${API_BASE}/courses/${courseId}`, data);
-  return res.data;
+  try {
+    const response = await apiClient.put(`/courses/${courseId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating course:', error);
+    throw error;
+  }
 };
 
 export const deleteCourse = async (courseId: number): Promise<void> => {
-  await axios.delete(`${API_BASE}/courses/${courseId}`);
+  try {
+    await apiClient.delete(`/courses/${courseId}`);
+  } catch (error) {
+    console.error('Error deleting course:', error);
+    throw error;
+  }
 };
 
+export const getTopics = async (): Promise<Topic[]> => {
+  try {
+    const response = await apiClient.get('/topics');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching topics:', error);
+    throw error;
+  }
+};
+
+// ======== STUDENTS API ========
+export const getStudents = async (
+  page: number = 1,
+  limit: number = 10,
+  status?: string,
+): Promise<{ data: Student[]; total: number }> => {
+  try {
+    const response = await apiClient.get('/users/students', {
+      params: { page, limit, status },
+    });
+    return {
+      data: response.data,
+      total: response.data.length,
+    };
+  } catch (error) {
+    console.error('Error fetching students:', error);
+    throw error;
+  }
+};
+
+// ======== INSTRUCTORS API ========
+export const getInstructors = async (
+  page: number = 1,
+  limit: number = 10,
+): Promise<{ data: Instructor[]; total: number }> => {
+  try {
+    const response = await apiClient.get('/users/instructors', {
+      params: { page, limit },
+    });
+    return {
+      data: response.data,
+      total: response.data.length,
+    };
+  } catch (error) {
+    console.error('Error fetching instructors:', error);
+    throw error;
+  }
+};
+
+// ======== REPORTS API ========
 export const getDashboardStats = async () => {
-  const res = await axios.get(`${API_BASE}/reports/dashboard-stats`);
-  return res.data;
+  try {
+    const response = await apiClient.get('/reports/statistics');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    throw error;
+  }
 };
 
 export const getMonthlyRevenue = async () => {
-  const res = await axios.get(`${API_BASE}/reports/monthly-revenue`);
-  return res.data;
+  try {
+    const response = await apiClient.get('/reports/revenue');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching monthly revenue:', error);
+    throw error;
+  }
 };
-*/
-
-// Export aliases for current demo phase
-export const getCourses = getCoursesDemo;
-export const getCourseById = getCourseByIdDemo;
-export const createCourse = createCourseDemo;
-export const updateCourse = updateCourseDemo;
-export const deleteCourse = deleteCourseDemmo;
-export const getDashboardStats = getDashboardStatsDemo;
-export const getMonthlyRevenue = getMonthlyRevenueDemo;
-export const getTopics = getTopicsDemo;

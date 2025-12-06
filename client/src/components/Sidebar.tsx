@@ -12,6 +12,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { UserRole } from '@/types';
 
 const { Sider } = Layout;
 
@@ -24,6 +25,14 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapse }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+
+  const roleLabelMap: Record<UserRole, string> = {
+    [UserRole.ADMIN]: 'admin',
+    [UserRole.INSTRUCTOR]: 'instructor',
+    [UserRole.STUDENT]: 'student',
+  };
+
+  const roleLabel = user?.role !== undefined ? roleLabelMap[user.role as UserRole] : undefined;
 
   const menuItems = [
     {
@@ -108,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapse }) => {
             size={36}
             style={{ backgroundColor: '#1890ff' }}
           >
-            {user?.avatar || user?.username?.charAt(0).toUpperCase()}
+            {user?.username?.charAt(0).toUpperCase()}
           </Avatar>
           {!collapsed && (
             <div style={{ textAlign: 'left' }}>
@@ -116,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapse }) => {
                 {user?.firstName} {user?.lastName}
               </div>
               <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: 11 }}>
-                {user?.role}
+                {roleLabel}
               </div>
             </div>
           )}

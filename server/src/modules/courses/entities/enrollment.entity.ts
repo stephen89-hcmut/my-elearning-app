@@ -12,7 +12,7 @@ export class Enrollment {
   @PrimaryColumn({ name: 'course_id' })
   courseId: number;
 
-  @Column({ name: 'enrollment_date', default: () => 'CURRENT_DATE' })
+  @Column({ name: 'enrollment_date', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   enrollmentDate: Date;
 
   @Column({ name: 'completion_status', default: LearningStatus.NOT_STARTED })

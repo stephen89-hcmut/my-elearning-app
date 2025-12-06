@@ -24,13 +24,6 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const fillDemoAccount = () => {
-    form.setFieldsValue({
-      username: 'sManager',
-      password: 'password123',
-    });
-  };
-
   return (
     <div className="login-container">
       <div className="login-wrapper">
@@ -93,30 +86,6 @@ const LoginPage: React.FC = () => {
                 </Button>
               </Form.Item>
             </Form>
-
-            {/* Demo Account Section */}
-            <div className="demo-account">
-              <h4>Demo Account</h4>
-              <div className="demo-credentials">
-                <div className="credential-row">
-                  <span className="credential-label">Username:</span>
-                  <span className="credential-value">sManager</span>
-                </div>
-                <div className="credential-row">
-                  <span className="credential-label">Password:</span>
-                  <span className="credential-value">password123</span>
-                </div>
-              </div>
-              <Button
-                type="default"
-                block
-                size="large"
-                onClick={fillDemoAccount}
-                className="demo-button"
-              >
-                Use Demo Account
-              </Button>
-            </div>
           </Spin>
         </Card>
       </div>

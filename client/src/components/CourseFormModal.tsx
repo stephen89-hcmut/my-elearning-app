@@ -31,6 +31,7 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
   title,
   loading,
   course,
+  instructors,
   topics,
   onSubmit,
   onCancel,
@@ -61,12 +62,6 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
       console.error('Form validation failed:', error);
     }
   };
-
-  const mockInstructors = [
-    { id: 1, name: 'Nguyen Minh Tan' },
-    { id: 2, name: 'Pham Thi Hoa' },
-    { id: 3, name: 'Le Thi Anh' },
-  ];
 
   return (
     <Modal
@@ -130,9 +125,9 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
                 placeholder="Select instructor"
                 size="large"
               >
-                {mockInstructors.map((inst) => (
-                  <Select.Option key={inst.id} value={inst.id}>
-                    {inst.name}
+                {(instructors || []).map((inst: any) => (
+                  <Select.Option key={inst.instructorId} value={inst.instructorId}>
+                    {inst.user?.firstName} {inst.user?.lastName}
                   </Select.Option>
                 ))}
               </Select>

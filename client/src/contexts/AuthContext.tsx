@@ -1,14 +1,6 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
-
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: 'admin' | 'instructor' | 'student';
-  avatar?: string;
-}
+import React, { createContext, useState, useContext, ReactNode, useMemo } from 'react';
+import { loginApi, LoginResponse } from '@/api/auth';
+import { User } from '@/types';
 
 interface AuthContextType {
   user: User | null;
@@ -22,72 +14,29 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     const stored = localStorage.getItem('user');
-    return stored ? JSON.parse(stored) : null;
+    return stored ? (JSON.parse(stored) as User) : null;
   });
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
 
   const login = async (username: string, password: string) => {
-    // Simulate API call with 500ms delay
-    return new Promise<void>((resolve, reject) => {
-      setTimeout(() => {
-        // Mock credentials
-        const mockUsers: Record<string, { password: string; user: User }> = {
-          sManager: {
-            password: 'password123',
-            user: {
-              id: '1',
-              username: 'sManager',
-              email: 'manager@educore.vn',
-              firstName: 'Quản',
-              lastName: 'Lý',
-              role: 'admin',
-              avatar: 'MS',
-            },
-          },
-          instructor: {
-            password: 'password123',
-            user: {
-              id: '2',
-              username: 'instructor',
-              email: 'instructor@educore.vn',
-              firstName: 'Giảng',
-              lastName: 'Viên',
-              role: 'instructor',
-              avatar: 'GV',
-            },
-          },
-          student: {
-            password: 'password123',
-            user: {
-              id: '3',
-              username: 'student',
-              email: 'student@educore.vn',
-              firstName: 'Sinh',
-              lastName: 'Viên',
-              role: 'student',
-              avatar: 'SV',
-            },
-          },
-        };
-
-        const mockUser = mockUsers[username];
-        if (mockUser && mockUser.password === password) {
-          setUser(mockUser.user);
-          localStorage.setItem('user', JSON.stringify(mockUser.user));
-          resolve();
-        } else {
-          reject(new Error('Invalid username or password'));
-        }
-      }, 500);
-    });
+    const res: LoginResponse = await loginApi(username, password);
+    setUser(res.user);
+    setToken(res.accessToken);
+    localStorage.setItem('user', JSON.stringify(res.user));
+    localStorage.setItem('token', res.accessToken);
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
   };
 
+  const isAuthenticated = useMemo(() => Boolean(user && token), [user, token]);
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

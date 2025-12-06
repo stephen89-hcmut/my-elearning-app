@@ -36,7 +36,8 @@ async function main() {
     // ============================================
     console.log('Creating users...');
 
-    const hashedPassword = await bcrypt.hash('password123', 12);
+    // use unified test password for all seeded users
+    const hashedPassword = await bcrypt.hash('123456', 12);
 
     const admin = await prisma.user.create({
       data: {
