@@ -1,5 +1,5 @@
 // src/mock/courses.ts
-import { Course, CourseLevel } from '@/types';
+import { Course, CourseLevel, Student, Instructor } from '@/types';
 
 export const mockCourses: Course[] = [
   {
@@ -150,4 +150,217 @@ export const mockMonthlyRevenue = [
   { month: 'Oct', revenue: 3200 },
   { month: 'Nov', revenue: 2600 },
   { month: 'Dec', revenue: 3100 },
+];
+
+// Mock Students Data
+export const mockStudents: Student[] = [
+  {
+    studentId: 1,
+    enrollmentDate: new Date('2024-01-15'),
+    status: 'active',
+    user: {
+      userId: 1,
+      username: 'tran_van_long',
+      email: 'long.tran@student.edu.vn',
+      firstName: 'Tran',
+      lastName: 'Van Long',
+      role: 2,
+    },
+  },
+  {
+    studentId: 2,
+    enrollmentDate: new Date('2024-01-20'),
+    status: 'active',
+    user: {
+      userId: 2,
+      username: 'nguyen_thi_mai',
+      email: 'mai.nguyen@student.edu.vn',
+      firstName: 'Nguyen',
+      lastName: 'Thi Mai',
+      role: 2,
+    },
+  },
+  {
+    studentId: 3,
+    enrollmentDate: new Date('2024-02-05'),
+    status: 'active',
+    user: {
+      userId: 3,
+      username: 'le_hoang_nam',
+      email: 'nam.le@student.edu.vn',
+      firstName: 'Le',
+      lastName: 'Hoang Nam',
+      role: 2,
+    },
+  },
+  {
+    studentId: 4,
+    enrollmentDate: new Date('2024-02-12'),
+    status: 'active',
+    user: {
+      userId: 4,
+      username: 'pham_thi_huong',
+      email: 'huong.pham@student.edu.vn',
+      firstName: 'Pham',
+      lastName: 'Thi Huong',
+      role: 2,
+    },
+  },
+  {
+    studentId: 5,
+    enrollmentDate: new Date('2024-03-01'),
+    status: 'active',
+    user: {
+      userId: 5,
+      username: 'vo_van_binh',
+      email: 'binh.vo@student.edu.vn',
+      firstName: 'Vo',
+      lastName: 'Van Binh',
+      role: 2,
+    },
+  },
+  {
+    studentId: 6,
+    enrollmentDate: new Date('2024-03-10'),
+    status: 'active',
+    user: {
+      userId: 6,
+      username: 'hoang_thi_lan',
+      email: 'lan.hoang@student.edu.vn',
+      firstName: 'Hoang',
+      lastName: 'Thi Lan',
+      role: 2,
+    },
+  },
+  {
+    studentId: 7,
+    enrollmentDate: new Date('2024-04-05'),
+    status: 'active',
+    user: {
+      userId: 7,
+      username: 'bui_van_cuong',
+      email: 'cuong.bui@student.edu.vn',
+      firstName: 'Bui',
+      lastName: 'Van Cuong',
+      role: 2,
+    },
+  },
+  {
+    studentId: 8,
+    enrollmentDate: new Date('2024-05-02'),
+    status: 'inactive',
+    user: {
+      userId: 8,
+      username: 'dang_thi_thao',
+      email: 'thao.dang@student.edu.vn',
+      firstName: 'Dang',
+      lastName: 'Thi Thao',
+      role: 2,
+    },
+  },
+  {
+    studentId: 9,
+    enrollmentDate: new Date('2024-05-15'),
+    status: 'active',
+    user: {
+      userId: 9,
+      username: 'ngo_van_tuan',
+      email: 'tuan.ngo@student.edu.vn',
+      firstName: 'Ngo',
+      lastName: 'Van Tuan',
+      role: 2,
+    },
+  },
+  {
+    studentId: 10,
+    enrollmentDate: new Date('2024-06-01'),
+    status: 'active',
+    user: {
+      userId: 10,
+      username: 'truong_thi_hong',
+      email: 'hong.truong@student.edu.vn',
+      firstName: 'Truong',
+      lastName: 'Thi Hong',
+      role: 2,
+    },
+  },
+];
+
+// Mock Instructors Data
+export const mockInstructors: Instructor[] = [
+  {
+    instructorId: 1,
+    qualification: 'Database Systems, SQL, Data Modeling',
+    hourlyRate: 50,
+    rating: 4.8,
+    courses: [],
+    user: {
+      userId: 101,
+      username: 'nguyen_minh_tan',
+      email: 'tan.nguyen@educore.vn',
+      firstName: 'Nguyen',
+      lastName: 'Minh Tan',
+      role: 1,
+    },
+  },
+  {
+    instructorId: 2,
+    qualification: 'Web Development, React, Node.js',
+    hourlyRate: 60,
+    rating: 4.7,
+    courses: [],
+    user: {
+      userId: 102,
+      username: 'pham_thi_hoa',
+      email: 'hoa.pham@educore.vn',
+      firstName: 'Pham',
+      lastName: 'Thi Hoa',
+      role: 1,
+    },
+  },
+  {
+    instructorId: 3,
+    qualification: 'Business Analytics, Marketing, Strategy',
+    hourlyRate: 55,
+    rating: 4.6,
+    courses: [],
+    user: {
+      userId: 103,
+      username: 'le_thi_anh',
+      email: 'anh.le@educore.vn',
+      firstName: 'Le',
+      lastName: 'Thi Anh',
+      role: 1,
+    },
+  },
+  {
+    instructorId: 4,
+    qualification: 'UI/UX Design, Figma, Adobe XD',
+    hourlyRate: 45,
+    rating: 4.5,
+    courses: [],
+    user: {
+      userId: 104,
+      username: 'sarah_williams',
+      email: 'sarah@educore.vn',
+      firstName: 'Sarah',
+      lastName: 'Williams',
+      role: 1,
+    },
+  },
+  {
+    instructorId: 5,
+    qualification: 'Mobile Development, Flutter, iOS',
+    hourlyRate: 58,
+    rating: 4.9,
+    courses: [],
+    user: {
+      userId: 105,
+      username: 'michael_brown',
+      email: 'michael@educore.vn',
+      firstName: 'Michael',
+      lastName: 'Brown',
+      role: 1,
+    },
+  },
 ];

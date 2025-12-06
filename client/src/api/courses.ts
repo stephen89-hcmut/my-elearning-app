@@ -1,13 +1,21 @@
 // src/api/courses.ts
-import axios from 'axios';
-import { Course, CreateCourseDto, UpdateCourseDto, PaginatedResponse } from '@/types';
+// import axios from 'axios';
+import { Course, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic } from '@/types';
 import { mockCourses, mockDashboardStats, mockMonthlyRevenue } from '@/mock/courses';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+// const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 // Simulating network delay
 const simulateDelay = (ms: number = 500) =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+const mockTopics: Topic[] = [
+  { topicId: 1, topicName: 'Computer Science', description: 'CS fundamentals' },
+  { topicId: 2, topicName: 'Business', description: 'Business fundamentals' },
+  { topicId: 3, topicName: 'Design', description: 'Design and UX' },
+  { topicId: 4, topicName: 'Marketing', description: 'Marketing strategies' },
+  { topicId: 5, topicName: 'Development', description: 'Software development' },
+];
 
 // ======== GIAI ĐOẠN 1: MOCK DATA ========
 export const getCoursesDemo = async (
@@ -37,8 +45,14 @@ export const createCourseDemo = async (data: CreateCourseDto): Promise<Course> =
   await simulateDelay();
   const newCourse: Course = {
     courseId: Math.max(...mockCourses.map((c) => c.courseId)) + 1,
-    ...data,
+    courseName: data.courseName,
+    description: data.description || '',
+    language: data.language,
+    price: data.price,
+    minScore: data.minScore || 50,
+    level: data.level || 0,
     totalLectures: 0,
+    topics: mockTopics.filter((t) => data.topicIds?.includes(t.topicId)),
   };
   mockCourses.push(newCourse);
   return newCourse;
@@ -70,6 +84,17 @@ export const getDashboardStatsDemo = async () => {
 export const getMonthlyRevenueDemo = async () => {
   await simulateDelay();
   return mockMonthlyRevenue;
+};
+
+export const getTopicsDemo = async (): Promise<Topic[]> => {
+  await simulateDelay();
+  return [
+    { topicId: 1, topicName: 'Computer Science', description: 'CS fundamentals' },
+    { topicId: 2, topicName: 'Business', description: 'Business fundamentals' },
+    { topicId: 3, topicName: 'Design', description: 'Design and UX' },
+    { topicId: 4, topicName: 'Marketing', description: 'Marketing strategies' },
+    { topicId: 5, topicName: 'Development', description: 'Software development' },
+  ];
 };
 
 // ======== GIAI ĐOẠN 2-3: REAL API (Uncomment khi backend ready) ========
@@ -127,3 +152,4 @@ export const updateCourse = updateCourseDemo;
 export const deleteCourse = deleteCourseDemmo;
 export const getDashboardStats = getDashboardStatsDemo;
 export const getMonthlyRevenue = getMonthlyRevenueDemo;
+export const getTopics = getTopicsDemo;

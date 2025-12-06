@@ -4,3 +4,5 @@ export { default as Header } from './Header';
 export { default as StatisticsCard, StatisticsCards } from './StatisticsCard';
 export { default as RevenueChart } from './RevenueChart';
 export { default as CourseTable } from './CourseTable';
+export { default as CourseFormModal } from './CourseFormModal';
+export { default as CourseDetailModal } from './CourseDetailModal';

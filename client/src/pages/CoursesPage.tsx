@@ -1,13 +1,19 @@
 // src/pages/CoursesPage.tsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { message } from 'antd';
-import { CourseTable } from '@/components';
-import { getCourses, deleteCourse } from '@/api/courses';
+import { message, Button, Form } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { CourseTable, CourseFormModal, CourseDetailModal } from '@/components';
+import { getCourses, deleteCourse, createCourse, updateCourse, getTopicsDemo } from '@/api/courses';
+import { CreateCourseDto, UpdateCourseDto } from '@/types';
 
 const CoursesPage: React.FC = () => {
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [page] = useState(1);
+  const [limit] = useState(10);
+  const [formModalVisible, setFormModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
   const { data: coursesData, isLoading } = useQuery({
@@ -15,28 +21,134 @@ const CoursesPage: React.FC = () => {
     queryFn: () => getCourses(page, limit),
   });
 
+  const { data: topicsData = [] } = useQuery({
+    queryKey: ['topics'],
+    queryFn: () => getTopicsDemo(),
+  });
+
+  const createCourseMutation = useMutation({
+    mutationFn: createCourse,
+    onSuccess: () => {
+      message.success('Course created successfully');
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      setFormModalVisible(false);
+      form.resetFields();
+    },
+    onError: (error: any) => {
+      message.error(error.message || 'Failed to create course');
+    },
+  });
+
+  const updateCourseMutation = useMutation({
+    mutationFn: ({ courseId, data }: { courseId: number; data: UpdateCourseDto }) =>
+      updateCourse(courseId, data),
+    onSuccess: () => {
+      message.success('Course updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      setFormModalVisible(false);
+      form.resetFields();
+      setSelectedCourse(null);
+    },
+    onError: (error: any) => {
+      message.error(error.message || 'Failed to update course');
+    },
+  });
+
   const deleteCourseMutation = useMutation({
     mutationFn: deleteCourse,
     onSuccess: () => {
       message.success('Course deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      setDetailModalVisible(false);
+      setSelectedCourse(null);
     },
     onError: (error: any) => {
       message.error(error.message || 'Failed to delete course');
     },
   });
 
+  const handleCreate = () => {
+    setSelectedCourse(null);
+    form.resetFields();
+    setFormModalVisible(true);
+  };
+
+  const handleEdit = (courseId: number) => {
+    const course = coursesData?.data.find((c) => c.courseId === courseId);
+    if (course) {
+      setSelectedCourse(course);
+      setFormModalVisible(true);
+      setDetailModalVisible(false);
+    }
+  };
+
+  const handleView = (courseId: number) => {
+    const course = coursesData?.data.find((c) => c.courseId === courseId);
+    if (course) {
+      setSelectedCourse(course);
+      setDetailModalVisible(true);
+    }
+  };
+
   const handleDelete = (courseId: number) => {
     deleteCourseMutation.mutate(courseId);
   };
 
+  const handleFormSubmit = (data: CreateCourseDto | UpdateCourseDto) => {
+    if (selectedCourse) {
+      updateCourseMutation.mutate({
+        courseId: selectedCourse.courseId,
+        data: data as UpdateCourseDto,
+      });
+    } else {
+      createCourseMutation.mutate(data as CreateCourseDto);
+    }
+  };
+
   return (
     <div style={{ padding: 24 }}>
-      <h1 style={{ marginBottom: 24 }}>Courses Management</h1>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between' }}>
+        <h1>Courses Management</h1>
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+          Create Course
+        </Button>
+      </div>
+
       <CourseTable
         courses={coursesData?.data || []}
         loading={isLoading}
+        onEdit={handleEdit}
         onDelete={handleDelete}
+        onView={handleView}
+      />
+
+      <CourseFormModal
+        visible={formModalVisible}
+        title={selectedCourse ? 'Edit Course' : 'Create New Course'}
+        loading={
+          createCourseMutation.isPending || updateCourseMutation.isPending
+        }
+        course={selectedCourse}
+        topics={topicsData}
+        onSubmit={handleFormSubmit}
+        onCancel={() => {
+          setFormModalVisible(false);
+          form.resetFields();
+          setSelectedCourse(null);
+        }}
+        form={form}
+      />
+
+      <CourseDetailModal
+        visible={detailModalVisible}
+        course={selectedCourse}
+        loading={false}
+        onEdit={() => handleEdit(selectedCourse.courseId)}
+        onDelete={() => handleDelete(selectedCourse.courseId)}
+        onCancel={() => {
+          setDetailModalVisible(false);
+          setSelectedCourse(null);
+        }}
       />
     </div>
   );

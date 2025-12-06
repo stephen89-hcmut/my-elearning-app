@@ -43,6 +43,15 @@ export class CoursesController {
     return this.coursesService.findById(id);
   }
 
+  @Get(':id/students')
+  getStudentsByCourse(
+    @Param('id', ParseIntPipe) courseId: number,
+    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+  ) {
+    return this.coursesService.getStudentsByCourse(courseId, page, limit);
+  }
+
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,

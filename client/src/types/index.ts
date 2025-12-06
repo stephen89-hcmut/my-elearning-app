@@ -39,6 +39,8 @@ export interface Instructor {
   instructorId: number;
   qualification?: string;
   hourlyRate?: number;
+  rating?: number;
+  courses?: Course[];
   user?: User;
 }
 
@@ -52,6 +54,7 @@ export interface Course {
   level: CourseLevel;
   totalLectures: number;
   topics?: Topic[];
+  instructor?: Instructor;
   instructors?: Instructor[];
   rating?: number;
   studentCount?: number;
@@ -75,6 +78,7 @@ export interface Lecture {
 export interface Student {
   studentId: number;
   enrollmentDate: Date;
+  status?: 'active' | 'inactive';
   user?: User;
 }
 

@@ -1,6 +1,6 @@
 // src/components/Sidebar.tsx
 import React from 'react';
-import { Menu, Layout } from 'antd';
+import { Menu, Layout, Button, Avatar, Divider, Popconfirm, message } from 'antd';
 import {
   HomeOutlined,
   BookOutlined,
@@ -8,8 +8,10 @@ import {
   UserOutlined,
   FileTextOutlined,
   SettingOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { Sider } = Layout;
 
@@ -21,6 +23,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapse }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   const menuItems = [
     {
@@ -96,15 +99,49 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapse }) => {
           bottom: 16,
           width: '100%',
           padding: '0 16px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          paddingTop: 16,
           textAlign: 'center',
-          color: '#fff',
-          fontSize: 12,
         }}
       >
-        <div style={{ marginBottom: 8 }}>👤</div>
-        <div style={{ fontWeight: 'bold' }}>SManager</div>
+        <Divider style={{ margin: '12px 0', borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Avatar
+            size={36}
+            style={{ backgroundColor: '#1890ff' }}
+          >
+            {user?.avatar || user?.username?.charAt(0).toUpperCase()}
+          </Avatar>
+          {!collapsed && (
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>
+                {user?.firstName} {user?.lastName}
+              </div>
+              <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: 11 }}>
+                {user?.role}
+              </div>
+            </div>
+          )}
+        </div>
+        <Popconfirm
+          title="Logout"
+          description="Are you sure you want to logout?"
+          onConfirm={() => {
+            logout();
+            message.success('Logged out successfully');
+            navigate('/login');
+          }}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button
+            type="primary"
+            danger
+            block
+            icon={<LogoutOutlined />}
+            size="small"
+          >
+            {collapsed ? '' : 'Logout'}
+          </Button>
+        </Popconfirm>
       </div>
     </Sider>
   );

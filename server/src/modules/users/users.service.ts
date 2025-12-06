@@ -9,6 +9,120 @@ import { UserRole } from '@/common/enums';
 
 @Injectable()
 export class UsersService {
+  // Mock data storage (temporary - will be replaced with database)
+  private mockStudents: Student[] = [
+    {
+      studentId: 1,
+      enrollmentDate: new Date('2024-01-01'),
+      createdAt: new Date('2024-01-01'),
+      user: {
+        userId: 1,
+        username: 'student1',
+        email: 'student1@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        password: '',
+        role: 0,
+        bankName: null,
+        paymentAccount: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        student: null,
+        instructor: null,
+        admin: null,
+      },
+      enrollments: [],
+    },
+    {
+      studentId: 2,
+      enrollmentDate: new Date('2024-01-02'),
+      createdAt: new Date('2024-01-02'),
+      user: {
+        userId: 2,
+        username: 'student2',
+        email: 'student2@example.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        password: '',
+        role: 0,
+        bankName: null,
+        paymentAccount: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        student: null,
+        instructor: null,
+        admin: null,
+      },
+      enrollments: [],
+    },
+    {
+      studentId: 3,
+      enrollmentDate: new Date('2024-01-03'),
+      createdAt: new Date('2024-01-03'),
+      user: {
+        userId: 3,
+        username: 'student3',
+        email: 'student3@example.com',
+        firstName: 'Bob',
+        lastName: 'Johnson',
+        password: '',
+        role: 0,
+        bankName: null,
+        paymentAccount: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        student: null,
+        instructor: null,
+        admin: null,
+      },
+      enrollments: [],
+    },
+    {
+      studentId: 4,
+      enrollmentDate: new Date('2024-01-04'),
+      createdAt: new Date('2024-01-04'),
+      user: {
+        userId: 4,
+        username: 'student4',
+        email: 'student4@example.com',
+        firstName: 'Alice',
+        lastName: 'Williams',
+        password: '',
+        role: 0,
+        bankName: null,
+        paymentAccount: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        student: null,
+        instructor: null,
+        admin: null,
+      },
+      enrollments: [],
+    },
+    {
+      studentId: 5,
+      enrollmentDate: new Date('2024-01-05'),
+      createdAt: new Date('2024-01-05'),
+      user: {
+        userId: 5,
+        username: 'student5',
+        email: 'student5@example.com',
+        firstName: 'Charlie',
+        lastName: 'Brown',
+        password: '',
+        role: 0,
+        bankName: null,
+        paymentAccount: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        student: null,
+        instructor: null,
+        admin: null,
+      },
+      enrollments: [],
+    },
+  ];
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -90,5 +204,30 @@ export class UsersService {
 
   async validatePassword(password: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(password, hashedPassword);
+  }
+
+  async getStudents(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<any> {
+    // Mock implementation - return paginated students list
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const paginatedStudents = this.mockStudents.slice(start, end);
+    const total = this.mockStudents.length;
+
+    return {
+      data: paginatedStudents.map((student) => ({
+        studentId: student.studentId,
+        fullName: `${student.user.firstName} ${student.user.lastName}`,
+        email: student.user.email,
+        username: student.user.username,
+        enrollmentDate: student.enrollmentDate,
+      })),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 }

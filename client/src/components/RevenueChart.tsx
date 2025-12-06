@@ -1,6 +1,6 @@
 // src/components/RevenueChart.tsx
 import React from 'react';
-import { Card, Row, Col } from 'antd';
+import { Card } from 'antd';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface RevenueChartProps {

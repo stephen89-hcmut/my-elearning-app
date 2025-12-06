@@ -8,7 +8,6 @@ import {
   Select,
   Button,
   Space,
-  Modal,
   Tag,
   Popconfirm,
 } from 'antd';

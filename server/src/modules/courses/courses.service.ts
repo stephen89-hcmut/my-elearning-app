@@ -2,11 +2,173 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Course, Topic, CourseInstructor } from './entities';
+import { Course, Topic, CourseInstructor, Enrollment } from './entities';
 import { CreateCourseDto, UpdateCourseDto } from './dto';
+import { Student, User } from '@/modules/users/entities';
+import { CourseLevel } from '@/common/enums';
 
 @Injectable()
 export class CoursesService {
+  // Mock data storage (temporary - will be replaced with database)
+  private mockCourses: Course[] = [
+    {
+      courseId: 1,
+      courseName: 'Advanced TypeScript',
+      description: 'Learn advanced TypeScript concepts',
+      language: 'English',
+      price: 99.99,
+      minScore: 60,
+      level: CourseLevel.ADVANCED,
+      totalLectures: 20,
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      topics: [],
+      instructors: [],
+      sections: [],
+      enrollments: [],
+    },
+    {
+      courseId: 2,
+      courseName: 'React Fundamentals',
+      description: 'Master React basics and hooks',
+      language: 'English',
+      price: 79.99,
+      minScore: 50,
+      level: CourseLevel.BEGINNER,
+      totalLectures: 15,
+      createdAt: new Date('2024-01-05'),
+      updatedAt: new Date('2024-01-05'),
+      topics: [],
+      instructors: [],
+      sections: [],
+      enrollments: [],
+    },
+    {
+      courseId: 3,
+      courseName: 'NestJS Backend Development',
+      description: 'Build scalable backend with NestJS',
+      language: 'English',
+      price: 89.99,
+      minScore: 55,
+      level: CourseLevel.INTERMEDIATE,
+      totalLectures: 25,
+      createdAt: new Date('2024-01-10'),
+      updatedAt: new Date('2024-01-10'),
+      topics: [],
+      instructors: [],
+      sections: [],
+      enrollments: [],
+    },
+  ];
+
+  private mockTopics: Topic[] = [
+    { topicId: 1, topicName: 'Web Development', courses: [] },
+    { topicId: 2, topicName: 'Frontend', courses: [] },
+    { topicId: 3, topicName: 'Backend', courses: [] },
+    { topicId: 4, topicName: 'TypeScript', courses: [] },
+  ];
+
+  private mockEnrollments: Enrollment[] = [
+    {
+      studentId: 1,
+      courseId: 1,
+      enrollmentDate: new Date('2024-01-15'),
+      status: 1,
+      createdAt: new Date('2024-01-15'),
+      student: null,
+      course: null,
+    },
+    {
+      studentId: 2,
+      courseId: 1,
+      enrollmentDate: new Date('2024-01-16'),
+      status: 1,
+      createdAt: new Date('2024-01-16'),
+      student: null,
+      course: null,
+    },
+    {
+      studentId: 1,
+      courseId: 2,
+      enrollmentDate: new Date('2024-01-20'),
+      status: 1,
+      createdAt: new Date('2024-01-20'),
+      student: null,
+      course: null,
+    },
+  ];
+
+  private mockStudents: Student[] = [
+    {
+      studentId: 1,
+      enrollmentDate: new Date('2024-01-01'),
+      createdAt: new Date('2024-01-01'),
+      user: {
+        userId: 1,
+        username: 'student1',
+        email: 'student1@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        password: '',
+        role: 0,
+        bankName: null,
+        paymentAccount: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        student: null,
+        instructor: null,
+        admin: null,
+      },
+      enrollments: [],
+    },
+    {
+      studentId: 2,
+      enrollmentDate: new Date('2024-01-02'),
+      createdAt: new Date('2024-01-02'),
+      user: {
+        userId: 2,
+        username: 'student2',
+        email: 'student2@example.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        password: '',
+        role: 0,
+        bankName: null,
+        paymentAccount: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        student: null,
+        instructor: null,
+        admin: null,
+      },
+      enrollments: [],
+    },
+    {
+      studentId: 3,
+      enrollmentDate: new Date('2024-01-03'),
+      createdAt: new Date('2024-01-03'),
+      user: {
+        userId: 3,
+        username: 'student3',
+        email: 'student3@example.com',
+        firstName: 'Bob',
+        lastName: 'Johnson',
+        password: '',
+        role: 0,
+        bankName: null,
+        paymentAccount: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        student: null,
+        instructor: null,
+        admin: null,
+      },
+      enrollments: [],
+    },
+  ];
+
+  private nextCourseId = 4;
+
   constructor(
     @InjectRepository(Course)
     private coursesRepository: Repository<Course>,
@@ -14,34 +176,37 @@ export class CoursesService {
     private topicsRepository: Repository<Topic>,
     @InjectRepository(CourseInstructor)
     private courseInstructorRepository: Repository<CourseInstructor>,
+    @InjectRepository(Enrollment)
+    private enrollmentRepository: Repository<Enrollment>,
   ) {}
 
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
     const { topicIds, ...courseData } = createCourseDto;
 
-    // Validate topics exist
-    if (topicIds && topicIds.length > 0) {
-      const topics = await this.topicsRepository.findByIds(topicIds);
-      if (topics.length !== topicIds.length) {
-        throw new BadRequestException('One or more topics not found');
-      }
-    }
-
-    const course = this.coursesRepository.create({
+    // Mock implementation - create new course
+    const newCourse: Course = {
+      courseId: this.nextCourseId++,
       ...courseData,
-      topics: topicIds ? await this.topicsRepository.findByIds(topicIds) : [],
-    });
+      topics: topicIds
+        ? this.mockTopics.filter((t) => topicIds.includes(t.topicId))
+        : [],
+      instructors: [],
+      sections: [],
+      enrollments: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-    return this.coursesRepository.save(course);
+    this.mockCourses.push(newCourse);
+    return newCourse;
   }
 
   async findAll(page: number = 1, limit: number = 10): Promise<any> {
-    const [data, total] = await this.coursesRepository.findAndCount({
-      relations: ['topics', 'instructors', 'instructors.user'],
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { createdAt: 'DESC' },
-    });
+    // Mock implementation with pagination
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const data = this.mockCourses.slice(start, end);
+    const total = this.mockCourses.length;
 
     return {
       data,
@@ -53,10 +218,8 @@ export class CoursesService {
   }
 
   async findById(id: number): Promise<Course> {
-    const course = await this.coursesRepository.findOne({
-      where: { courseId: id },
-      relations: ['topics', 'instructors', 'instructors.user', 'sections', 'enrollments'],
-    });
+    // Mock implementation - find course by ID
+    const course = this.mockCourses.find((c) => c.courseId === id);
 
     if (!course) {
       throw new NotFoundException(`Course with ID ${id} not found`);
@@ -66,28 +229,75 @@ export class CoursesService {
   }
 
   async update(id: number, updateCourseDto: UpdateCourseDto): Promise<Course> {
+    // Mock implementation - update course
     const course = await this.findById(id);
 
     const { topicIds, ...updateData } = updateCourseDto;
 
     if (topicIds) {
-      const topics = await this.topicsRepository.findByIds(topicIds);
-      if (topics.length !== topicIds.length) {
-        throw new BadRequestException('One or more topics not found');
-      }
-      course.topics = topics;
+      course.topics = this.mockTopics.filter((t) =>
+        topicIds.includes(t.topicId),
+      );
     }
 
-    Object.assign(course, updateData);
-    return this.coursesRepository.save(course);
+    Object.assign(course, updateData, { updatedAt: new Date() });
+    return course;
   }
 
   async delete(id: number): Promise<void> {
-    const course = await this.findById(id);
-    await this.coursesRepository.remove(course);
+    // Mock implementation - delete course
+    const index = this.mockCourses.findIndex((c) => c.courseId === id);
+
+    if (index === -1) {
+      throw new NotFoundException(`Course with ID ${id} not found`);
+    }
+
+    this.mockCourses.splice(index, 1);
   }
 
   async getTopics(): Promise<Topic[]> {
-    return this.topicsRepository.find();
+    // Mock implementation - return all topics
+    return this.mockTopics;
+  }
+
+  async getStudentsByCourse(
+    courseId: number,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<any> {
+    // Mock implementation - get students enrolled in a course
+    const course = await this.findById(courseId);
+
+    // Filter enrollments for this course
+    const courseEnrollments = this.mockEnrollments.filter(
+      (e) => e.courseId === courseId,
+    );
+
+    // Get students from enrollments
+    const studentIds = courseEnrollments.map((e) => e.studentId);
+    const students = this.mockStudents.filter((s) =>
+      studentIds.includes(s.studentId),
+    );
+
+    // Paginate
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const paginatedStudents = students.slice(start, end);
+
+    return {
+      data: paginatedStudents.map((s) => ({
+        studentId: s.studentId,
+        fullName: `${s.user.firstName} ${s.user.lastName}`,
+        email: s.user.email,
+        username: s.user.username,
+        enrollmentDate: courseEnrollments.find(
+          (e) => e.studentId === s.studentId,
+        )?.enrollmentDate,
+      })),
+      total: students.length,
+      page,
+      limit,
+      totalPages: Math.ceil(students.length / limit),
+    };
   }
 }
