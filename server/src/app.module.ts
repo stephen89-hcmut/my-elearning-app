@@ -1,7 +1,7 @@
 // src/app.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { CoursesModule } from '@/modules/courses/courses.module';
 import { UsersModule } from '@/modules/users/users.module';
 import { AuthModule } from '@/modules/auth/auth.module';
@@ -49,7 +49,7 @@ import {
         Question,
         QuestionChoice,
       ],
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: false,
       logging: false,
     }),
     CoursesModule,

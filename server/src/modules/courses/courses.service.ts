@@ -62,10 +62,30 @@ export class CoursesService {
   ];
 
   private mockTopics: Topic[] = [
-    { topicId: 1, topicName: 'Web Development', courses: [] },
-    { topicId: 2, topicName: 'Frontend', courses: [] },
-    { topicId: 3, topicName: 'Backend', courses: [] },
-    { topicId: 4, topicName: 'TypeScript', courses: [] },
+    {
+      topicId: 1,
+      topicName: 'Web Development' as any,
+      description: null as any,
+      createdAt: new Date(),
+    },
+    {
+      topicId: 2,
+      topicName: 'Frontend' as any,
+      description: null as any,
+      createdAt: new Date(),
+    },
+    {
+      topicId: 3,
+      topicName: 'Backend' as any,
+      description: null as any,
+      createdAt: new Date(),
+    },
+    {
+      topicId: 4,
+      topicName: 'TypeScript' as any,
+      description: null as any,
+      createdAt: new Date(),
+    },
   ];
 
   private mockEnrollments: Enrollment[] = [
@@ -186,7 +206,13 @@ export class CoursesService {
     // Mock implementation - create new course
     const newCourse: Course = {
       courseId: this.nextCourseId++,
-      ...courseData,
+      courseName: courseData.courseName,
+      description: courseData.description ?? '',
+      language: courseData.language,
+      price: courseData.price,
+      minScore: courseData.minScore ?? 50,
+      level: courseData.level ?? CourseLevel.BEGINNER,
+      totalLectures: (courseData as any).totalLectures ?? 0,
       topics: topicIds
         ? this.mockTopics.filter((t) => topicIds.includes(t.topicId))
         : [],

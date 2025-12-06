@@ -96,7 +96,7 @@ model Instructor {
 
 model Student {
   studentId      Int    @id @map("student_id")
-  enrollmentDate DateTime @default(now()) @map("enrollment_date") @db.Date
+  enrollmentDate DateTime @default(now()) @map("enrollment_date") @db.DateTime(0)
 
   user           User           @relation(fields: [studentId], references: [userId], onDelete: Cascade)
   enrollments    Enrollment[]
@@ -222,7 +222,7 @@ model LectureView {
   studentId Int
   lectureId Int
   status    LectureStatus @default(NOTSTARTED)
-  viewDate  DateTime      @default(now()) @map("view_date")
+  viewDate  DateTime      @default(now()) @map("view_date") @db.DateTime(0)
 
   student Student @relation(fields: [studentId], references: [studentId], onDelete: Cascade)
   lecture Lecture @relation(fields: [lectureId], references: [lectureId], onDelete: Cascade)
@@ -296,7 +296,7 @@ model TestResult {
 model Enrollment {
   studentId        Int               @map("student_id")
   courseId         Int               @map("course_id")
-  enrollmentDate   DateTime          @default(now()) @map("enrollment_date") @db.Date
+  enrollmentDate   DateTime          @default(now()) @map("enrollment_date") @db.DateTime(0)
   completionStatus CompletionStatus  @default(INPROGRESS) @map("completion_status")
 
   student Student @relation(fields: [studentId], references: [studentId], onDelete: Cascade)
@@ -313,7 +313,7 @@ model Transaction {
   instructorId   Int     @map("instructor_id")
   price          Decimal @db.Decimal(10, 2)
   paymentStatus  PaymentStatus @map("payment_status")
-  transactionDate DateTime @default(now()) @map("transaction_date")
+  transactionDate DateTime @default(now()) @map("transaction_date") @db.DateTime(0)
 
   student    Student    @relation(fields: [studentId], references: [studentId], onDelete: Restrict)
   course     Course     @relation(fields: [courseId], references: [courseId], onDelete: Restrict)
@@ -330,7 +330,7 @@ model Certificate {
   certificateId Int      @id @default(autoincrement()) @map("certificate_id")
   studentId     Int      @map("student_id")
   courseId      Int      @map("course_id")
-  issuedDate    DateTime @default(now()) @map("issued_date") @db.Date
+  issuedDate    DateTime @default(now()) @map("issued_date") @db.DateTime(0)
 
   student Student @relation(fields: [studentId], references: [studentId], onDelete: Restrict)
   course  Course  @relation(fields: [courseId], references: [courseId], onDelete: Restrict)
@@ -344,7 +344,7 @@ model CourseRating {
   courseId   Int      @map("course_id")
   rating     Int
   comment    String?  @db.Text
-  ratingDate DateTime @default(now()) @map("rating_date")
+  ratingDate DateTime @default(now()) @map("rating_date") @db.DateTime(0)
 
   student Student @relation(fields: [studentId], references: [studentId], onDelete: Cascade)
   course  Course  @relation(fields: [courseId], references: [courseId], onDelete: Cascade)

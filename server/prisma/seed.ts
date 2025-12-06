@@ -7,6 +7,30 @@ async function main() {
   try {
     console.log('🌱 Starting database seeding...');
 
+    // Clean existing data in FK-safe order to avoid unique/PK collisions on reruns
+    await prisma.$transaction([
+      prisma.courseRating.deleteMany(),
+      prisma.certificate.deleteMany(),
+      prisma.transaction.deleteMany(),
+      prisma.lectureView.deleteMany(),
+      prisma.testResult.deleteMany(),
+      prisma.enrollment.deleteMany(),
+      prisma.questionChoice.deleteMany(),
+      prisma.question.deleteMany(),
+      prisma.test.deleteMany(),
+      prisma.lecture.deleteMany(),
+      prisma.section.deleteMany(),
+      prisma.courseInstructor.deleteMany(),
+      prisma.courseTopics.deleteMany(),
+      prisma.prerequisite.deleteMany(),
+      prisma.course.deleteMany(),
+      prisma.topic.deleteMany(),
+      prisma.student.deleteMany(),
+      prisma.instructor.deleteMany(),
+      prisma.admin.deleteMany(),
+      prisma.user.deleteMany(),
+    ]);
+
     // ============================================
     // 1. CREATE USERS
     // ============================================
@@ -668,6 +692,7 @@ async function main() {
       // C++ Lectures
       prisma.lecture.create({
         data: {
+          lectureId: 1,
           sectionId: 1,
           lectureName: 'Cai dat Visual Studio Code',
           link: 'https://hcmut.edu.vn/cpp/bai1',
@@ -676,6 +701,7 @@ async function main() {
       }),
       prisma.lecture.create({
         data: {
+          lectureId: 2,
           sectionId: 1,
           lectureName: 'Chuong trinh Hello World',
           link: 'https://hcmut.edu.vn/cpp/bai2',
@@ -684,6 +710,7 @@ async function main() {
       }),
       prisma.lecture.create({
         data: {
+          lectureId: 3,
           sectionId: 2,
           lectureName: 'Cac kieu du lieu nguyen thuy',
           link: 'https://hcmut.edu.vn/cpp/bai3',
@@ -692,6 +719,7 @@ async function main() {
       }),
       prisma.lecture.create({
         data: {
+          lectureId: 4,
           sectionId: 3,
           lectureName: 'Vong lap For va While',
           link: 'https://hcmut.edu.vn/cpp/bai4',
@@ -701,6 +729,7 @@ async function main() {
       // Web Lectures
       prisma.lecture.create({
         data: {
+          lectureId: 5,
           sectionId: 4,
           lectureName: 'Cau truc DOM trong HTML',
           link: 'https://hcmut.edu.vn/web/bai1',
@@ -709,6 +738,7 @@ async function main() {
       }),
       prisma.lecture.create({
         data: {
+          lectureId: 6,
           sectionId: 4,
           lectureName: 'Flexbox va Grid System',
           link: 'https://hcmut.edu.vn/web/bai2',
@@ -717,6 +747,7 @@ async function main() {
       }),
       prisma.lecture.create({
         data: {
+          lectureId: 7,
           sectionId: 5,
           lectureName: 'Arrow Function & Destructuring',
           link: 'https://hcmut.edu.vn/web/bai3',
@@ -726,6 +757,7 @@ async function main() {
       // Database Lectures
       prisma.lecture.create({
         data: {
+          lectureId: 8,
           sectionId: 7,
           lectureName: 'Thuc the va Moi quan he',
           link: 'https://hcmut.edu.vn/db/bai1',
@@ -734,6 +766,7 @@ async function main() {
       }),
       prisma.lecture.create({
         data: {
+          lectureId: 9,
           sectionId: 8,
           lectureName: 'Cau lenh SELECT-FROM-WHERE',
           link: 'https://hcmut.edu.vn/db/bai2',
@@ -742,6 +775,7 @@ async function main() {
       }),
       prisma.lecture.create({
         data: {
+          lectureId: 10,
           sectionId: 9,
           lectureName: 'Su dung INNER JOIN',
           link: 'https://hcmut.edu.vn/db/bai3',
@@ -751,6 +785,7 @@ async function main() {
       // Python Lectures
       prisma.lecture.create({
         data: {
+          lectureId: 11,
           sectionId: 10,
           lectureName: 'Gioi thieu Jupyter Notebook',
           link: 'https://hcmut.edu.vn/data/bai1',
@@ -759,6 +794,7 @@ async function main() {
       }),
       prisma.lecture.create({
         data: {
+          lectureId: 12,
           sectionId: 10,
           lectureName: 'Cac thu vien can thiet',
           link: 'https://hcmut.edu.vn/data/bai2',
