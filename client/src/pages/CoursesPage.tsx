@@ -1,5 +1,5 @@
 // src/pages/CoursesPage.tsx
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { message, Button, Form, Alert, Input, Select, Space } from 'antd';
 import { PlusOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
@@ -8,8 +8,8 @@ import { getCourses, deleteCourse, createCourse, updateCourse, getTopics, getIns
 import { CourseLevel, CreateCourseDto, UpdateCourseDto, Instructor, Topic } from '@/types';
 
 const CoursesPage: React.FC = () => {
-  const [page] = useState(1);
-  const [limit] = useState(10);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [formModalVisible, setFormModalVisible] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -112,6 +112,20 @@ const CoursesPage: React.FC = () => {
     });
   }, [coursesData, levelFilter, searchTerm]);
 
+  const totalItems = useMemo(() => {
+    const filtered = searchTerm || levelFilter !== 'all';
+    return filtered ? filteredCourses.length : coursesData?.total || 0;
+  }, [coursesData?.total, filteredCourses.length, levelFilter, searchTerm]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, levelFilter]);
+
+  const handlePageChange = (nextPage: number, nextPageSize: number) => {
+    setPage(nextPage);
+    setLimit(nextPageSize);
+  };
+
   return (
     <div style={{ padding: 24 }}>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
@@ -157,6 +171,10 @@ const CoursesPage: React.FC = () => {
 
       <CourseTable
         courses={filteredCourses}
+        total={totalItems}
+        page={page}
+        pageSize={limit}
+        onPageChange={handlePageChange}
         loading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}

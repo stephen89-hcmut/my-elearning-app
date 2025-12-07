@@ -7,6 +7,10 @@ import { Course, CourseLevel } from '@/types';
 
 interface CourseTableProps {
   courses: Course[];
+  total: number;
+  page: number;
+  pageSize: number;
+  onPageChange: (page: number, pageSize: number) => void;
   loading?: boolean;
   onEdit?: (courseId: string) => void;
   onDelete?: (courseId: string) => void;
@@ -15,6 +19,10 @@ interface CourseTableProps {
 
 const CourseTable: React.FC<CourseTableProps> = ({
   courses,
+  total,
+  page,
+  pageSize,
+  onPageChange,
   loading = false,
   onEdit,
   onDelete,
@@ -144,11 +152,13 @@ const CourseTable: React.FC<CourseTableProps> = ({
         rowKey="courseId"
         loading={loading}
         pagination={{
-          total: courses.length,
-          pageSize: 10,
+          total,
+          current: page,
+          pageSize,
           showSizeChanger: true,
-          showTotal: (total, range) =>
-            `Showing ${range[0]}-${range[1]} of ${total}`,
+          pageSizeOptions: ['5', '10', '20', '50'],
+          showTotal: (t, range) => `Showing ${range[0]}-${range[1]} of ${t}`,
+          onChange: onPageChange,
         }}
       />
     </Card>

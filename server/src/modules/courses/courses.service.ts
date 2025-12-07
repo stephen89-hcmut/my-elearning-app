@@ -90,7 +90,10 @@ export class CoursesService {
 
   async findAll(page?: number, limit?: number): Promise<any> {
     if (page === undefined || limit === undefined) {
-      const data = await this.coursesRepository.find({ order: { courseId: 'ASC' } });
+      const data = await this.coursesRepository.find({
+        order: { courseId: 'ASC' },
+        relations: ['topics', 'instructors'],
+      });
       return {
         data,
         total: data.length,
@@ -104,6 +107,7 @@ export class CoursesService {
       skip: (page - 1) * limit,
       take: limit,
       order: { courseId: 'ASC' },
+      relations: ['topics', 'instructors'],
     });
 
     return {
@@ -118,7 +122,7 @@ export class CoursesService {
   async findById(id: string): Promise<Course> {
     const course = await this.coursesRepository.findOne({
       where: { courseId: id },
-      relations: ['enrollments'],
+      relations: ['enrollments', 'topics', 'instructors'],
     });
 
     if (!course) {
@@ -129,9 +133,50 @@ export class CoursesService {
   }
 
   async update(id: string, updateCourseDto: UpdateCourseDto): Promise<Course> {
-    const course = await this.findById(id);
-    Object.assign(course, updateCourseDto);
-    return this.coursesRepository.save(course);
+    return this.dataSource.transaction(async (manager) => {
+      const courseRepo = manager.getRepository(Course);
+      const course = await courseRepo.findOne({ where: { courseId: id } });
+
+      if (!course) {
+        throw new NotFoundException(`Course with ID ${id} not found`);
+      }
+
+      const { instructorIds, topicIds, ...payload } = updateCourseDto;
+
+      // Update scalar fields
+      Object.assign(course, payload);
+      await courseRepo.save(course);
+
+      // Update instructors junction if provided
+      if (Array.isArray(instructorIds)) {
+        await manager.query('DELETE FROM COURSE_INSTRUCTORS WHERE course_id = ?', [id]);
+        for (const instructorId of instructorIds) {
+          await manager.query(
+            'INSERT INTO COURSE_INSTRUCTORS (course_id, instructor_id, is_main_instructor) VALUES (?, ?, ?)',
+            [id, instructorId, false],
+          );
+        }
+      }
+
+      // Update topics junction if provided
+      if (Array.isArray(topicIds)) {
+        await manager.query('DELETE FROM COURSE_TOPICS WHERE course_id = ?', [id]);
+        for (const topicId of topicIds) {
+          await manager.query('INSERT INTO COURSE_TOPICS (course_id, topic_id) VALUES (?, ?)', [id, topicId]);
+        }
+      }
+
+      const updated = await courseRepo.findOne({
+        where: { courseId: id },
+        relations: ['topics', 'instructors', 'enrollments'],
+      });
+
+      if (!updated) {
+        throw new NotFoundException(`Course with ID ${id} not found`);
+      }
+
+      return updated;
+    });
   }
 
   async delete(id: string): Promise<void> {
