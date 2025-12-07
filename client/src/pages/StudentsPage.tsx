@@ -12,16 +12,16 @@ import {
   Popconfirm,
   message,
 } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { getStudents } from '@/api/courses';
 import { Student } from '@/types';
-import { StudentDetailModal } from '@/components';
+import { StudentEditModal } from '@/components';
 
 const StudentsPage: React.FC = () => {
   const [studentsSearch, setStudentsSearch] = useState('');
-  const [detailVisible, setDetailVisible] = useState(false);
-  const [selectedStudentId, setSelectedStudentId] = useState<number | undefined>(undefined);
+  const [editVisible, setEditVisible] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   // Fetch students from API
   const {
@@ -105,11 +105,17 @@ const StudentsPage: React.FC = () => {
       width: 140,
       render: (_: any, record: Student) => (
         <Space size="small">
-          <Button size="small" onClick={() => {
-            setSelectedStudentId(record.studentId);
-            setDetailVisible(true);
-          }}>View</Button>
-          <Button size="small" onClick={() => message.info(`Edit student #${record.studentId}`)}>Edit</Button>
+          <Button type="text" size="small" icon={<EyeOutlined />} onClick={() => message.info(`View student #${record.studentId} (detail modal removed)`)} title="View" />
+          <Button
+            type="text"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setSelectedStudent(record);
+              setEditVisible(true);
+            }}
+            title="Edit"
+          />
           <Popconfirm
             title="Delete Student"
             description="Are you sure you want to delete this student?"
@@ -117,7 +123,7 @@ const StudentsPage: React.FC = () => {
             cancelText="No"
             onConfirm={() => message.info(`Deleted student #${record.studentId}`)}
           >
-            <Button size="small" danger>Delete</Button>
+            <Button type="text" size="small" danger icon={<DeleteOutlined />} title="Delete" />
           </Popconfirm>
         </Space>
       ),
@@ -148,18 +154,11 @@ const StudentsPage: React.FC = () => {
                 onChange={(e) => setStudentsSearch(e.target.value)}
                 style={{ width: 300 }}
               />
-              <Button type="primary">+ Add Student</Button>
             </Space>
             <Table<Student>
               columns={studentColumns as any}
               dataSource={filteredStudents}
               rowKey="studentId"
-              onRow={(record) => ({
-                onClick: () => {
-                  setSelectedStudentId(record.studentId);
-                  setDetailVisible(true);
-                },
-              })}
               pagination={{
                 pageSize: 10,
                 showSizeChanger: true,
@@ -171,14 +170,21 @@ const StudentsPage: React.FC = () => {
         </Spin>
       </Card>
 
-      <StudentDetailModal
-        visible={detailVisible}
-        studentId={selectedStudentId}
-        onClose={() => {
-          setDetailVisible(false);
-          setSelectedStudentId(undefined);
+      <StudentEditModal
+        open={editVisible}
+        student={selectedStudent || undefined}
+        onCancel={() => {
+          setEditVisible(false);
+          setSelectedStudent(null);
+        }}
+        onSubmit={(values) => {
+          // TODO: wire up to backend update endpoint when available
+          message.success('Student updated (UI only)');
+          setEditVisible(false);
+          setSelectedStudent(null);
         }}
       />
+
     </div>
   );
 };

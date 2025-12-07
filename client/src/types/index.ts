@@ -42,6 +42,7 @@ export interface Instructor {
   rating?: number;
   courses?: Course[];
   user?: User;
+  bio?: string;
 }
 
 export interface InstructorStats {

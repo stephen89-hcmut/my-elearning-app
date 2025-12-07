@@ -2,7 +2,6 @@
 import React from 'react';
 import { Table, Card, Button, Space, Popconfirm, Tag } from 'antd';
 import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import { Course, CourseLevel } from '@/types';
 
 interface CourseTableProps {
@@ -20,7 +19,6 @@ const CourseTable: React.FC<CourseTableProps> = ({
   onDelete,
   onView,
 }) => {
-  const navigate = useNavigate();
   const columns = [
     {
       title: 'No',
@@ -71,7 +69,7 @@ const CourseTable: React.FC<CourseTableProps> = ({
             type="text"
             size="small"
             icon={<EyeOutlined />}
-            onClick={() => onView?.(record.courseId) || navigate(`/courses/${record.courseId}`)}
+            onClick={() => onView?.(record.courseId)}
             title="View"
           />
           <Button

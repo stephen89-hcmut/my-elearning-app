@@ -5,6 +5,5 @@ export { default as StatisticsCard, StatisticsCards } from './StatisticsCard';
 export { default as RevenueChart } from './RevenueChart';
 export { default as CourseTable } from './CourseTable';
 export { default as CourseFormModal } from './CourseFormModal';
-export { default as CourseDetailModal } from './CourseDetailModal';
-export { default as StudentDetailModal } from './StudentDetailModal';
-export { default as InstructorDetailModal } from './InstructorDetailModal';
+export { default as StudentEditModal } from './StudentEditModal';
+export { default as InstructorEditModal } from './InstructorEditModal';

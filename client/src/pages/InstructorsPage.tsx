@@ -13,15 +13,15 @@ import {
   Popconfirm,
   message,
 } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { getInstructors } from '@/api/courses';
-import { InstructorDetailModal } from '@/components';
+import { InstructorEditModal } from '@/components';
 
 const InstructorsPage: React.FC = () => {
   const [searchText, setSearchText] = useState('');
-  const [detailVisible, setDetailVisible] = useState(false);
-  const [selectedInstructorId, setSelectedInstructorId] = useState<number | undefined>(undefined);
+  const [editVisible, setEditVisible] = useState(false);
+  const [selectedInstructor, setSelectedInstructor] = useState<any | null>(null);
 
   // Fetch instructors from API
   const {
@@ -101,8 +101,17 @@ const InstructorsPage: React.FC = () => {
       width: 140,
       render: (_: any, record: any) => (
         <Space size="small">
-          <Button size="small" onClick={() => { setSelectedInstructorId(record.instructorId); setDetailVisible(true); }}>View</Button>
-          <Button size="small" onClick={() => message.info(`Edit instructor #${record.instructorId}`)}>Edit</Button>
+          <Button type="text" size="small" icon={<EyeOutlined />} onClick={() => message.info(`View instructor #${record.instructorId} (detail modal removed)`)} title="View" />
+          <Button
+            type="text"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setSelectedInstructor(record);
+              setEditVisible(true);
+            }}
+            title="Edit"
+          />
           <Popconfirm
             title="Delete Instructor"
             description="Are you sure you want to delete this instructor?"
@@ -110,7 +119,7 @@ const InstructorsPage: React.FC = () => {
             cancelText="No"
             onConfirm={() => message.info(`Deleted instructor #${record.instructorId}`)}
           >
-            <Button size="small" danger>Delete</Button>
+            <Button type="text" size="small" danger icon={<DeleteOutlined />} title="Delete" />
           </Popconfirm>
         </Space>
       ),
@@ -141,7 +150,6 @@ const InstructorsPage: React.FC = () => {
               onChange={(e) => setSearchText(e.target.value)}
               style={{ width: 250 }}
             />
-            <Button type="primary">+ Add Instructor</Button>
           </Space>
         }
       >
@@ -149,23 +157,23 @@ const InstructorsPage: React.FC = () => {
           <Table<any>
             columns={columns as any}
             dataSource={filteredInstructors.map((inst: any, idx: number) => ({ ...inst, key: inst.instructorId || idx }))}
-            onRow={(record) => ({
-              onClick: () => {
-                setSelectedInstructorId(record.instructorId);
-                setDetailVisible(true);
-              },
-            })}
             pagination={{ pageSize: 10 }}
           />
         </Spin>
       </Card>
 
-      <InstructorDetailModal
-        visible={detailVisible}
-        instructorId={selectedInstructorId}
-        onClose={() => {
-          setDetailVisible(false);
-          setSelectedInstructorId(undefined);
+      <InstructorEditModal
+        open={editVisible}
+        instructor={selectedInstructor || undefined}
+        onCancel={() => {
+          setEditVisible(false);
+          setSelectedInstructor(null);
+        }}
+        onSubmit={(values) => {
+          // TODO: wire up to backend update endpoint when available
+          message.success('Instructor updated (UI only)');
+          setEditVisible(false);
+          setSelectedInstructor(null);
         }}
       />
     </div>

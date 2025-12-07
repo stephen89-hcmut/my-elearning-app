@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { message, Button, Form, Alert } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { CourseTable, CourseFormModal, CourseDetailModal } from '@/components';
+import { CourseTable, CourseFormModal } from '@/components';
 import { getCourses, deleteCourse, createCourse, updateCourse, getTopics, getInstructors } from '@/api/courses';
 import { CreateCourseDto, UpdateCourseDto } from '@/types';
 
@@ -11,9 +11,7 @@ const CoursesPage: React.FC = () => {
   const [page] = useState(1);
   const [limit] = useState(10);
   const [formModalVisible, setFormModalVisible] = useState(false);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
-  const [selectedCourseId, setSelectedCourseId] = useState<number | undefined>(undefined);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -65,8 +63,6 @@ const CoursesPage: React.FC = () => {
     onSuccess: () => {
       message.success('Course deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['courses'] });
-      setDetailModalVisible(false);
-      setSelectedCourse(null);
     },
     onError: (error: any) => {
       message.error(error.message || 'Failed to delete course');
@@ -84,13 +80,7 @@ const CoursesPage: React.FC = () => {
     if (course) {
       setSelectedCourse(course);
       setFormModalVisible(true);
-      setDetailModalVisible(false);
     }
-  };
-
-  const handleView = (courseId: number) => {
-    setSelectedCourseId(courseId);
-    setDetailModalVisible(true);
   };
 
   const handleDelete = (courseId: number) => {
@@ -132,7 +122,6 @@ const CoursesPage: React.FC = () => {
         loading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onView={handleView}
       />
 
       <CourseFormModal
@@ -151,18 +140,6 @@ const CoursesPage: React.FC = () => {
           setSelectedCourse(null);
         }}
         form={form}
-      />
-
-      <CourseDetailModal
-        visible={detailModalVisible}
-        courseId={selectedCourseId}
-        onEdit={(id) => handleEdit(id)}
-        onDelete={(id) => handleDelete(id)}
-        onCancel={() => {
-          setDetailModalVisible(false);
-          setSelectedCourse(null);
-          setSelectedCourseId(undefined);
-        }}
       />
     </div>
   );

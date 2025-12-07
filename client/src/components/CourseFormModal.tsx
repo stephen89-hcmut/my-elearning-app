@@ -77,7 +77,7 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
         </Button>,
       ]}
       width={700}
-      bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
+      styles={{ body: { maxHeight: '70vh', overflowY: 'auto' } }}
     >
       <Form
         form={form}
