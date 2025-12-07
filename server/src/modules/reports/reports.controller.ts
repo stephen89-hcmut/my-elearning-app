@@ -1,10 +1,16 @@
 // src/modules/reports/reports.controller.ts
-import { Controller, Get, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
+
+  // Root endpoint for dashboard summary
+  @Get()
+  getReportsOverview() {
+    return this.reportsService.getDashboardStats();
+  }
 
   @Get('dashboard-stats')
   getDashboardStats() {
@@ -19,19 +25,12 @@ export class ReportsController {
 
   @Get('monthly-revenue')
   getMonthlyRevenue(
-    @Query('month', new ParseIntPipe({ optional: true })) month?: number,
-    @Query('year', new ParseIntPipe({ optional: true })) year?: number,
+    @Query('month') month?: string,
+    @Query('year') year?: string,
   ) {
-    return this.reportsService.getMonthlyRevenue(month, year);
-  }
-
-  // Alias to match frontend call /reports/revenue
-  @Get('revenue')
-  getRevenueAlias(
-    @Query('month', new ParseIntPipe({ optional: true })) month?: number,
-    @Query('year', new ParseIntPipe({ optional: true })) year?: number,
-  ) {
-    return this.reportsService.getMonthlyRevenue(month, year);
+    const monthNum = month !== undefined && month !== null && month !== '' ? Number(month) : undefined;
+    const yearNum = year !== undefined && year !== null && year !== '' ? Number(year) : undefined;
+    return this.reportsService.getMonthlyRevenue(monthNum, yearNum);
   }
 
   @Get('course-stats')

@@ -1,6 +1,6 @@
 // src/api/courses.ts
 import axios from 'axios';
-import { Course, CourseDetail, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic, Student, Instructor, DashboardStats, MonthlyRevenue, StudentDetail, InstructorDetail, UpdateStudentDto, UpdateInstructorDto } from '@/types';
+import { Course, CourseDetail, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic, Student, Instructor, DashboardStats, StudentDetail, InstructorDetail, UpdateStudentDto, UpdateInstructorDto } from '@/types';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -200,20 +200,10 @@ export const deleteInstructor = async (id: string): Promise<void> => {
 // ======== REPORTS API ========
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   try {
-    const response = await apiClient.get('/reports/statistics');
+    const response = await apiClient.get('/reports');
     return response.data;
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
-    throw error;
-  }
-};
-
-export const getMonthlyRevenue = async (): Promise<MonthlyRevenue[]> => {
-  try {
-    const response = await apiClient.get('/reports/revenue');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching monthly revenue:', error);
     throw error;
   }
 };

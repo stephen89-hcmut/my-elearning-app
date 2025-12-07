@@ -219,3 +219,12 @@ export interface MonthlyRevenue {
   month: string;
   revenue: number;
 }
+
+export interface RevenueReport {
+  monthly: MonthlyRevenue[];
+  totalRevenue: number;
+  totalTransactions: number;
+  completedTransactions: number;
+  pendingTransactions: number;
+  failedTransactions: number;
+}

@@ -15,7 +15,6 @@ const AppHeader: React.FC = () => {
   const breadcrumb = useMemo(() => {
     const path = location.pathname || '/';
     const segments = path.split('/').filter(Boolean);
-    if (segments.length === 0) return ['Home'];
     const labelMap: Record<string, string> = {
       courses: 'Courses',
       students: 'Students',
@@ -24,7 +23,16 @@ const AppHeader: React.FC = () => {
       settings: 'Settings',
       login: 'Login',
     };
-    return ['Home', ...segments.map((seg) => labelMap[seg] || seg)];
+
+    // Build clickable crumbs with their target path for navigation
+    const crumbs = segments.reduce<{ label: string; to: string }[]>((acc, seg, idx) => {
+      const to = `/${segments.slice(0, idx + 1).join('/')}`;
+      const label = labelMap[seg] || seg;
+      acc.push({ label, to });
+      return acc;
+    }, []);
+
+    return [{ label: 'Home', to: '/' }, ...crumbs];
   }, [location.pathname]);
 
   return (
@@ -39,13 +47,26 @@ const AppHeader: React.FC = () => {
       }}
     >
       <div style={{ display: 'flex', gap: 16, alignItems: 'center', flex: 1 }}>
-        <span style={{ color: '#666', fontSize: 14, cursor: 'pointer' }} onClick={() => navigate('/')}> 
-          {breadcrumb.map((crumb, idx) => (
-            <span key={crumb + idx}>
-              <span style={{ color: idx === breadcrumb.length - 1 ? '#1890ff' : '#666' }}>{crumb}</span>
-              {idx < breadcrumb.length - 1 ? ' / ' : ''}
-            </span>
-          ))}
+        <span style={{ color: '#666', fontSize: 14 }}>
+          {breadcrumb.map((crumb, idx) => {
+            const isLast = idx === breadcrumb.length - 1;
+            const clickable = !isLast;
+
+            return (
+              <span
+                key={crumb.to + idx}
+                style={{
+                  color: isLast ? '#1890ff' : '#666',
+                  cursor: clickable ? 'pointer' : 'default',
+                }}
+                onClick={() => clickable && navigate(crumb.to)}
+                role={clickable ? 'button' : undefined}
+              >
+                {crumb.label}
+                {idx < breadcrumb.length - 1 ? ' / ' : ''}
+              </span>
+            );
+          })}
         </span>
       </div>
       <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
