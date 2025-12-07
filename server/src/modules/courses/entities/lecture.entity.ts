@@ -26,8 +26,6 @@ export class Lecture {
   @Column({ name: 'video_url', nullable: true })
   videoUrl: string;
 
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
 
   @ManyToOne(() => Section, (section) => section.lectures, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'section_id' })

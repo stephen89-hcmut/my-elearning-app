@@ -1,20 +1,12 @@
 // src/modules/users/entities/instructor.entity.ts
-import {
-  Entity,
-  PrimaryColumn,
-  Column,
-  OneToOne,
-  JoinColumn,
-  OneToMany,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './user.entity';
 import { CourseInstructor } from '@/modules/courses/entities/course-instructor.entity';
 
 @Entity('INSTRUCTORS')
 export class Instructor {
-  @PrimaryColumn({ name: 'instructor_id' })
-  instructorId: number;
+  @PrimaryColumn({ name: 'instructor_id', type: 'varchar', length: 20 })
+  instructorId: string;
 
   @Column('text', { name: 'teaching_field', nullable: true })
   teachingField: string;

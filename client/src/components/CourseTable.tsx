@@ -8,9 +8,9 @@ import { Course, CourseLevel } from '@/types';
 interface CourseTableProps {
   courses: Course[];
   loading?: boolean;
-  onEdit?: (courseId: string | number) => void;
-  onDelete?: (courseId: string | number) => void;
-  onView?: (courseId: string | number) => void;
+  onEdit?: (courseId: string) => void;
+  onDelete?: (courseId: string) => void;
+  onView?: (courseId: string) => void;
 }
 
 const CourseTable: React.FC<CourseTableProps> = ({

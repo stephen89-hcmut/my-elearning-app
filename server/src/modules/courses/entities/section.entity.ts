@@ -6,7 +6,6 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
-  CreateDateColumn,
 } from 'typeorm';
 import { Course } from './course.entity';
 import { Lecture } from './lecture.entity';
@@ -22,9 +21,6 @@ export class Section {
 
   @Column({ name: 'section_order' })
   sectionOrder: number;
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
 
   @ManyToOne(() => Course, (course) => course.sections, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'course_id' })

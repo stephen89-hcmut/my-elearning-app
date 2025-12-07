@@ -53,7 +53,7 @@ export interface InstructorStats {
 }
 
 export interface InstructorCourseSummary {
-  courseId: number;
+  courseId: string;
   courseName: string;
   language: string;
   level: CourseLevel;
@@ -85,7 +85,7 @@ export interface InstructorDetail {
 }
 
 export interface Course {
-  courseId: number;
+  courseId: string;
   courseName: string;
   description?: string;
   language: string;
@@ -116,7 +116,7 @@ export interface Section {
   sectionId: number;
   sectionName: string;
   sectionOrder: number;
-  courseId: number;
+  courseId: string;
   lectures?: Lecture[];
 }
 
@@ -147,7 +147,7 @@ export interface StudentDetail {
 
 export interface Enrollment {
   studentId: string;
-  courseId: number;
+  courseId: string;
   enrollmentDate: Date;
   status: LearningStatus;
   student?: Student;
@@ -161,6 +161,8 @@ export interface CreateCourseDto {
   price: number;
   minScore?: number;
   level?: CourseLevel;
+  instructorIds: string[];
+  topicIds: string[];
 }
 
 export interface UpdateCourseDto {

@@ -1,12 +1,5 @@
 // src/modules/users/entities/user.entity.ts
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToOne,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToOne } from 'typeorm';
 import { Student } from './student.entity';
 import { Instructor } from './instructor.entity';
 import { Admin } from './admin.entity';
@@ -14,8 +7,8 @@ import { UserRole } from '@/common/enums';
 
 @Entity('USERS')
 export class User {
-  @PrimaryGeneratedColumn({ name: 'user_id' })
-  userId: number;
+  @PrimaryColumn({ name: 'user_id', type: 'varchar', length: 20 })
+  userId: string;
 
   @Column({ unique: true })
   username: string;

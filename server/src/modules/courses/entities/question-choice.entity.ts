@@ -5,7 +5,6 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  CreateDateColumn,
 } from 'typeorm';
 import { Question } from './question.entity';
 
@@ -19,9 +18,6 @@ export class QuestionChoice {
 
   @Column({ name: 'is_correct', default: false })
   isCorrect: boolean;
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
 
   @ManyToOne(() => Question, (question) => question.wrongChoices, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'question_id' })

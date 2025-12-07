@@ -39,6 +39,11 @@ export class CoursesController {
     );
   }
 
+  @Get('topics')
+  getTopics() {
+    return this.coursesService.getTopics();
+  }
+
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.coursesService.findById(id);

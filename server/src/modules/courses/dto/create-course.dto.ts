@@ -7,6 +7,8 @@ import {
   IsEnum,
   IsOptional,
   Max,
+  IsArray,
+  ArrayNotEmpty,
 } from 'class-validator';
 import { CourseLevel } from '@/common/enums';
 
@@ -35,4 +37,14 @@ export class CreateCourseDto {
   @IsEnum(CourseLevel)
   @IsOptional()
   level?: CourseLevel;
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  instructorIds: string[];
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  topicIds: string[];
 }

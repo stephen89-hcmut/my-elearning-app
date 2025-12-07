@@ -76,7 +76,7 @@ export const createCourse = async (data: CreateCourseDto): Promise<Course> => {
 };
 
 export const updateCourse = async (
-  courseId: number,
+  courseId: string,
   data: UpdateCourseDto,
 ): Promise<Course> => {
   try {
@@ -88,7 +88,7 @@ export const updateCourse = async (
   }
 };
 
-export const deleteCourse = async (courseId: number | string): Promise<void> => {
+export const deleteCourse = async (courseId: string): Promise<void> => {
   try {
     await apiClient.delete(`/courses/${courseId}`);
   } catch (error) {

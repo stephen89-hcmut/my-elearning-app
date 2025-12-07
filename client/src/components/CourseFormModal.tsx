@@ -21,6 +21,8 @@ interface CourseFormModalProps {
   onSubmit: (data: CreateCourseDto | UpdateCourseDto) => void;
   onCancel: () => void;
   form: FormInstance;
+  topics: { topicId: number; topicName: string }[];
+  instructors: { instructorId: number; user?: { firstName: string; lastName: string } }[];
 }
 
 const CourseFormModal: React.FC<CourseFormModalProps> = ({
@@ -31,6 +33,8 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
   onSubmit,
   onCancel,
   form,
+  topics,
+  instructors,
 }) => {
   useEffect(() => {
     if (visible && course) {
@@ -41,6 +45,8 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
         price: Number(course.price ?? 0),
         minScore: course.minScore !== undefined && course.minScore !== null ? Number(course.minScore) : undefined,
         level: course.level,
+        instructorIds: course.instructors?.map((i) => i.instructorId?.toString()) || [],
+        topicIds: course.topics?.map((t) => t.topicId?.toString()) || [],
       });
     } else if (visible && !course) {
       form.resetFields();
@@ -55,6 +61,8 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
         price: values.price !== undefined && values.price !== null ? Number(values.price) : values.price,
         minScore: values.minScore !== undefined && values.minScore !== null ? Number(values.minScore) : values.minScore,
         level: values.level !== undefined ? Number(values.level) : undefined,
+        instructorIds: (values.instructorIds || []).map((id: string) => id),
+        topicIds: (values.topicIds || []).map((id: string) => id),
       } as CreateCourseDto | UpdateCourseDto;
 
       onSubmit(payload);
@@ -177,6 +185,42 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
             step={1}
             size="large"
             style={{ width: '100%' }}
+          />
+        </Form.Item>
+
+        {/* Instructors */}
+        <Form.Item
+          label="Instructors"
+          name="instructorIds"
+          rules={[{ required: !course, message: 'Please select at least one instructor' }]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Select instructors"
+            optionFilterProp="label"
+            size="large"
+            options={(instructors || []).map((ins) => ({
+              label: `${ins.user?.firstName || ''} ${ins.user?.lastName || ''}`.trim() || ins.instructorId,
+              value: ins.instructorId.toString(),
+            }))}
+          />
+        </Form.Item>
+
+        {/* Topics */}
+        <Form.Item
+          label="Topics"
+          name="topicIds"
+          rules={[{ required: !course, message: 'Please select at least one topic' }]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Select topics"
+            optionFilterProp="label"
+            size="large"
+            options={(topics || []).map((topic) => ({
+              label: topic.topicName,
+              value: topic.topicId.toString(),
+            }))}
           />
         </Form.Item>
 

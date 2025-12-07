@@ -4,8 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { message, Button, Form, Alert, Input, Select, Space } from 'antd';
 import { PlusOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import { CourseTable, CourseFormModal } from '@/components';
-import { getCourses, deleteCourse, createCourse, updateCourse } from '@/api/courses';
-import { CourseLevel, CreateCourseDto, UpdateCourseDto } from '@/types';
+import { getCourses, deleteCourse, createCourse, updateCourse, getTopics, getInstructors } from '@/api/courses';
+import { CourseLevel, CreateCourseDto, UpdateCourseDto, Instructor, Topic } from '@/types';
 
 const CoursesPage: React.FC = () => {
   const [page] = useState(1);
@@ -20,6 +20,16 @@ const CoursesPage: React.FC = () => {
   const { data: coursesData, isLoading, error: coursesError } = useQuery({
     queryKey: ['courses', page, limit],
     queryFn: () => getCourses(page, limit),
+  });
+
+  const { data: topicsData } = useQuery({
+    queryKey: ['topics'],
+    queryFn: getTopics,
+  });
+
+  const { data: instructorsData } = useQuery({
+    queryKey: ['instructors-all'],
+    queryFn: () => getInstructors(1, 200),
   });
 
   const createCourseMutation = useMutation({
@@ -67,7 +77,7 @@ const CoursesPage: React.FC = () => {
     setFormModalVisible(true);
   };
 
-  const handleEdit = (courseId: number) => {
+  const handleEdit = (courseId: string) => {
     const course = coursesData?.data.find((c) => c.courseId === courseId);
     if (course) {
       setSelectedCourse(course);
@@ -75,7 +85,7 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  const handleDelete = (courseId: number) => {
+  const handleDelete = (courseId: string) => {
     deleteCourseMutation.mutate(courseId);
   };
 
@@ -170,6 +180,8 @@ const CoursesPage: React.FC = () => {
           setSelectedCourse(null);
         }}
         form={form}
+        topics={topicsData || []}
+        instructors={instructorsData?.data || []}
       />
     </div>
   );

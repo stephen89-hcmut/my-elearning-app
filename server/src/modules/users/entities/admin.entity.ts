@@ -5,17 +5,13 @@ import {
   Column,
   OneToOne,
   JoinColumn,
-  CreateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity('ADMINS')
 export class Admin {
-  @PrimaryColumn({ name: 'admin_id' })
-  adminId: number;
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  @PrimaryColumn({ name: 'admin_id', type: 'varchar', length: 20 })
+  adminId: string;
 
   @OneToOne(() => User, (user) => user.admin, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'admin_id' })

@@ -8,8 +8,8 @@ export class CourseInstructor {
   @PrimaryColumn({ name: 'course_id', type: 'varchar', length: 20 })
   courseId: string;
 
-  @PrimaryColumn({ name: 'instructor_id' })
-  instructorId: number;
+  @PrimaryColumn({ name: 'instructor_id', type: 'varchar', length: 20 })
+  instructorId: string;
 
   @Column({ name: 'is_main_instructor', default: false })
   isMainInstructor: boolean;

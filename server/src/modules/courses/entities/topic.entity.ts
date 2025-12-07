@@ -1,10 +1,10 @@
 // src/modules/courses/entities/topic.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, Column } from 'typeorm';
 
 @Entity('TOPICS')
 export class Topic {
-  @PrimaryGeneratedColumn({ name: 'topic_id' })
-  topicId: number;
+  @PrimaryColumn({ name: 'topic_id', type: 'varchar', length: 20 })
+  topicId: string;
 
   @Column({ name: 'topic_name', unique: true })
   topicName: string;

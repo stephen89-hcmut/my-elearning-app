@@ -105,7 +105,7 @@ export class UsersService implements OnModuleInit {
     return this.findById(savedUser.userId);
   }
 
-  async findById(id: number): Promise<User> {
+  async findById(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { userId: id },
       relations: ['student', 'instructor', 'admin'],

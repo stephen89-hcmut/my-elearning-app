@@ -1,8 +1,8 @@
 // src/modules/courses/courses.service.ts
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { Course, Enrollment } from './entities';
+import { Repository, DataSource, EntityManager } from 'typeorm';
+import { Course, Enrollment, CourseInstructor, Topic } from './entities';
 import { CreateCourseDto, UpdateCourseDto } from './dto';
 import { QueryFailedError } from 'typeorm';
 
@@ -13,35 +13,79 @@ export class CoursesService {
     private coursesRepository: Repository<Course>,
     @InjectRepository(Enrollment)
     private enrollmentRepository: Repository<Enrollment>,
+    @InjectRepository(CourseInstructor)
+    private courseInstructorRepository: Repository<CourseInstructor>,
+    @InjectRepository(Topic)
+    private topicRepository: Repository<Topic>,
     private dataSource: DataSource,
   ) {}
 
-  private async getNextCourseId(): Promise<string> {
-    const rows = await this.dataSource.query(
-      'SELECT IFNULL(MAX(CAST(course_id AS UNSIGNED)), 0) + 1 AS nextId FROM COURSES',
-    );
-    const nextId = Number(rows?.[0]?.nextId || 1);
-    const safe = Number.isNaN(nextId) ? 1 : nextId;
-    return String(safe);
-  }
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
-    const duplicate = await this.coursesRepository.findOne({ where: { courseName: createCourseDto.courseName } });
-    if (duplicate) {
-      throw new BadRequestException('Course name already exists');
-    }
-    const courseId = await this.getNextCourseId();
-    const course = this.coursesRepository.create({ courseId, ...createCourseDto });
-    let saved: Course;
-    try {
-      saved = await this.coursesRepository.save(course);
-    } catch (err) {
-      if (err instanceof QueryFailedError && (err as any)?.code === 'ER_DUP_ENTRY') {
+    return this.dataSource.transaction(async (manager) => {
+      const courseRepo = manager.getRepository(Course);
+      const duplicate = await courseRepo.findOne({ where: { courseName: createCourseDto.courseName } });
+      if (duplicate) {
         throw new BadRequestException('Course name already exists');
       }
-      throw err;
-    }
 
-    return this.findById(saved.courseId);
+      const { instructorIds, topicIds, ...payload } = createCourseDto;
+      // Let DB trigger generate course_id (prefix/padded) via raw insert
+      const insertSql = `INSERT INTO COURSES (course_name, description, language, price, min_score, level)
+                         VALUES (?, ?, ?, ?, ?, ?)`;
+      const params = [
+        payload.courseName,
+        payload.description ?? null,
+        payload.language,
+        payload.price,
+        payload.minScore ?? 50,
+        payload.level ?? 0,
+      ];
+      try {
+        await manager.query(insertSql, params);
+      } catch (err) {
+        if (err instanceof QueryFailedError && (err as any)?.code === 'ER_DUP_ENTRY') {
+          throw new BadRequestException('Course name already exists');
+        }
+        throw err;
+      }
+
+      // Fetch generated course_id (trigger) by unique course_name
+      const courseIdRow = await manager.query('SELECT course_id FROM COURSES WHERE course_name = ? LIMIT 1', [
+        createCourseDto.courseName,
+      ]);
+      const courseId: string | undefined = courseIdRow?.[0]?.course_id;
+      if (!courseId) {
+        throw new BadRequestException('Failed to retrieve created course id');
+      }
+
+      // Link instructors (many-to-many via COURSE_INSTRUCTORS)
+      if (Array.isArray(instructorIds) && instructorIds.length > 0) {
+        for (const instructorId of instructorIds) {
+          await manager.query(
+            'INSERT INTO COURSE_INSTRUCTORS (course_id, instructor_id, is_main_instructor) VALUES (?, ?, ?)',
+            [courseId, instructorId, false],
+          );
+        }
+      }
+
+      // Link topics (many-to-many via COURSE_TOPICS)
+      if (Array.isArray(topicIds) && topicIds.length > 0) {
+        for (const topicId of topicIds) {
+          await manager.query('INSERT INTO COURSE_TOPICS (course_id, topic_id) VALUES (?, ?)', [courseId, topicId]);
+        }
+      }
+
+      const createdCourse = await courseRepo.findOne({
+        where: { courseId },
+        relations: ['topics', 'instructors', 'enrollments'],
+      });
+
+      if (!createdCourse) {
+        throw new NotFoundException(`Course with ID ${courseId} not found`);
+      }
+
+      return createdCourse;
+    });
   }
 
   async findAll(page?: number, limit?: number): Promise<any> {
@@ -137,5 +181,9 @@ export class CoursesService {
     }
 
     return row;
+  }
+
+  async getTopics(): Promise<Topic[]> {
+    return this.topicRepository.find({ order: { topicId: 'ASC' } });
   }
 }

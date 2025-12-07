@@ -6,7 +6,6 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
-  CreateDateColumn,
 } from 'typeorm';
 import { Test } from './test.entity';
 import { QuestionChoice } from './question-choice.entity';
@@ -25,9 +24,6 @@ export class Question {
 
   @Column('text', { name: 'correct_answer' })
   correctAnswer: string;
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
 
   @ManyToOne(() => Test, (test) => test.questions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'test_id' })
