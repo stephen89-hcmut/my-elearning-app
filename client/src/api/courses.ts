@@ -133,6 +133,15 @@ export const getStudentDetail = async (id: number): Promise<StudentDetail> => {
   }
 };
 
+export const deleteStudent = async (id: number): Promise<void> => {
+  try {
+    await apiClient.delete(`/users/students/${id}`);
+  } catch (error) {
+    console.error('Error deleting student:', error);
+    throw error;
+  }
+};
+
 // ======== INSTRUCTORS API ========
 export const getInstructors = async (
   page: number = 1,
@@ -155,6 +164,15 @@ export const getInstructorDetail = async (id: number): Promise<InstructorDetail>
     return response.data;
   } catch (error) {
     console.error('Error fetching instructor detail:', error);
+    throw error;
+  }
+};
+
+export const deleteInstructor = async (id: number): Promise<void> => {
+  try {
+    await apiClient.delete(`/users/instructors/${id}`);
+  } catch (error) {
+    console.error('Error deleting instructor:', error);
     throw error;
   }
 };

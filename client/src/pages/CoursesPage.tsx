@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { message, Button, Form, Alert } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { CourseTable, CourseFormModal } from '@/components';
-import { getCourses, deleteCourse, createCourse, updateCourse, getTopics, getInstructors } from '@/api/courses';
+import { getCourses, deleteCourse, createCourse, updateCourse } from '@/api/courses';
 import { CreateCourseDto, UpdateCourseDto } from '@/types';
 
 const CoursesPage: React.FC = () => {
@@ -18,16 +18,6 @@ const CoursesPage: React.FC = () => {
   const { data: coursesData, isLoading, error: coursesError } = useQuery({
     queryKey: ['courses', page, limit],
     queryFn: () => getCourses(page, limit),
-  });
-
-  const { data: topicsData = [] } = useQuery({
-    queryKey: ['topics'],
-    queryFn: () => getTopics(),
-  });
-
-  const { data: instructorsData = { data: [] } } = useQuery({
-    queryKey: ['instructors'],
-    queryFn: () => getInstructors(0, 100),
   });
 
   const createCourseMutation = useMutation({
@@ -131,8 +121,6 @@ const CoursesPage: React.FC = () => {
           createCourseMutation.isPending || updateCourseMutation.isPending
         }
         course={selectedCourse}
-        instructors={instructorsData.data}
-        topics={topicsData}
         onSubmit={handleFormSubmit}
         onCancel={() => {
           setFormModalVisible(false);

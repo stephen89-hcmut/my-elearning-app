@@ -6,21 +6,18 @@ import {
   Input,
   InputNumber,
   Select,
-  Checkbox,
   Button,
   FormInstance,
   Row,
   Col,
 } from 'antd';
-import { Course, CreateCourseDto, UpdateCourseDto, Topic } from '@/types';
+import { Course, CreateCourseDto, UpdateCourseDto, CourseLevel } from '@/types';
 
 interface CourseFormModalProps {
   visible: boolean;
   title: string;
   loading: boolean;
   course?: Course;
-  instructors?: any[];
-  topics: Topic[];
   onSubmit: (data: CreateCourseDto | UpdateCourseDto) => void;
   onCancel: () => void;
   form: FormInstance;
@@ -31,8 +28,6 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
   title,
   loading,
   course,
-  instructors,
-  topics,
   onSubmit,
   onCancel,
   form,
@@ -42,12 +37,10 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
       form.setFieldsValue({
         courseName: course.courseName,
         description: course.description,
-        instructor: course.instructor?.instructorId,
         language: course.language,
         price: course.price,
         minScore: course.minScore,
         level: course.level,
-        topicIds: course.topics?.map((t) => t.topicId) || [],
       });
     } else if (visible && !course) {
       form.resetFields();
@@ -57,7 +50,12 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      onSubmit(values);
+      const payload = {
+        ...values,
+        level: values.level !== undefined ? Number(values.level) : undefined,
+      } as CreateCourseDto | UpdateCourseDto;
+
+      onSubmit(payload);
     } catch (error) {
       console.error('Form validation failed:', error);
     }
@@ -113,41 +111,19 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
           />
         </Form.Item>
 
-        {/* Row 3: Instructor & Language */}
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              label="Instructor"
-              name="instructor"
-              rules={[{ required: true, message: 'Please select an instructor' }]}
-            >
-              <Select
-                placeholder="Select instructor"
-                size="large"
-              >
-                {(instructors || []).map((inst: any) => (
-                  <Select.Option key={inst.instructorId} value={inst.instructorId}>
-                    {inst.user?.firstName} {inst.user?.lastName}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              label="Language"
-              name="language"
-              rules={[{ required: true, message: 'Please select language' }]}
-            >
-              <Select placeholder="Select language" size="large">
-                <Select.Option value="English">English</Select.Option>
-                <Select.Option value="Vietnamese">Vietnamese</Select.Option>
-                <Select.Option value="French">French</Select.Option>
-                <Select.Option value="Spanish">Spanish</Select.Option>
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
+        {/* Language */}
+        <Form.Item
+          label="Language"
+          name="language"
+          rules={[{ required: true, message: 'Please select language' }]}
+        >
+          <Select placeholder="Select language" size="large">
+            <Select.Option value="English">English</Select.Option>
+            <Select.Option value="Vietnamese">Vietnamese</Select.Option>
+            <Select.Option value="French">French</Select.Option>
+            <Select.Option value="Spanish">Spanish</Select.Option>
+          </Select>
+        </Form.Item>
 
         {/* Row 4: Price & Level */}
         <Row gutter={16}>
@@ -176,10 +152,9 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
               rules={[{ required: true, message: 'Please select level' }]}
             >
               <Select placeholder="Select level" size="large">
-                <Select.Option value="Beginner">Beginner</Select.Option>
-                <Select.Option value="Intermediate">Intermediate</Select.Option>
-                <Select.Option value="Advanced">Advanced</Select.Option>
-                <Select.Option value="Expert">Expert</Select.Option>
+                <Select.Option value={CourseLevel.BEGINNER}>Beginner</Select.Option>
+                <Select.Option value={CourseLevel.INTERMEDIATE}>Intermediate</Select.Option>
+                <Select.Option value={CourseLevel.ADVANCED}>Advanced</Select.Option>
               </Select>
             </Form.Item>
           </Col>
@@ -203,34 +178,6 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
           />
         </Form.Item>
 
-        {/* Row 6: Topics */}
-        <Form.Item
-          label="Topics (Select at least one)"
-          name="topicIds"
-          rules={[
-            { required: true, message: 'Please select at least one topic' },
-            { 
-              validator: (_, value) => {
-                if (!value || value.length === 0) {
-                  return Promise.reject(new Error('Please select at least one topic'));
-                }
-                return Promise.resolve();
-              }
-            }
-          ]}
-        >
-          <Checkbox.Group style={{ width: '100%' }}>
-            <Row>
-              {topics.map((topic) => (
-                <Col span={12} key={topic.topicId} style={{ marginBottom: 8 }}>
-                  <Checkbox value={topic.topicId}>
-                    {topic.topicName}
-                  </Checkbox>
-                </Col>
-              ))}
-            </Row>
-          </Checkbox.Group>
-        </Form.Item>
       </Form>
     </Modal>
   );
