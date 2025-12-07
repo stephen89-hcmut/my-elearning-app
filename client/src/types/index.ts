@@ -73,11 +73,15 @@ export interface InstructorCoursesByLevel {
 }
 
 export interface InstructorDetail {
-  instructor: Instructor;
-  stats: InstructorStats;
-  revenueByCourse: InstructorRevenueByCourse[];
-  coursesByLevel: InstructorCoursesByLevel[];
-  courses: InstructorCourseSummary[];
+  instructor_name: string;
+  username: string;
+  email: string;
+  bio: string | null;
+  teaching_field: string | null;
+  total_courses: number;
+  total_students: number;
+  total_revenue: number;
+  avg_rating: number;
 }
 
 export interface Course {

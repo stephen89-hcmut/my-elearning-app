@@ -14,7 +14,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { ArrowLeftOutlined, MailOutlined, CalendarOutlined, BankOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, MailOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getInstructorDetail } from '@/api/courses';
@@ -23,7 +23,7 @@ import { InstructorDetail } from '@/types';
 const InstructorDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const instructorId = Number(id);
+  const instructorId = id as string;
 
   const {
     data,
@@ -33,11 +33,15 @@ const InstructorDetailPage: React.FC = () => {
   } = useQuery<InstructorDetail>({
     queryKey: ['instructor-detail', instructorId],
     queryFn: () => getInstructorDetail(instructorId),
-    enabled: !Number.isNaN(instructorId),
+    enabled: Boolean(instructorId),
   });
 
-  const user = data?.instructor.user;
-  const initials = `${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}` || 'NA';
+  const initials = (data?.instructor_name || 'NA')
+    .split(' ')
+    .map((p) => p.charAt(0))
+    .join('')
+    .slice(0, 2) || 'NA';
+  const joinedLabel = 'Joined —';
 
   return (
     <div style={{ padding: 24 }}>
@@ -65,33 +69,22 @@ const InstructorDetailPage: React.FC = () => {
                 </Avatar>
                 <div>
                   <Typography.Title level={3} style={{ margin: 0 }}>
-                    {user ? `${user.firstName} ${user.lastName}` : 'Instructor Name'}
+                    {data?.instructor_name || 'Instructor Name'}
                   </Typography.Title>
-                  <Typography.Text type="secondary" style={{ display: 'block' }}>@{user?.username || 'username'}</Typography.Text>
-                  <Tag color="purple" style={{ marginTop: 4 }}>{data?.instructor.teachingField || 'Specialty'}</Tag>
+                  <Typography.Text type="secondary" style={{ display: 'block' }}>@{data?.username || 'username'}</Typography.Text>
+                  <Tag color="purple" style={{ marginTop: 4 }}>{data?.teaching_field || 'Specialty'}</Tag>
                   <Typography.Paragraph style={{ marginTop: 8, marginBottom: 0 }}>
-                    {data?.instructor.bio || 'Instructor bio will appear here.'}
+                    {data?.bio || 'Instructor bio will appear here.'}
                   </Typography.Paragraph>
                   <Space size={12} wrap>
                     <Space size={6}>
                       <MailOutlined />
-                      <Typography.Text>{user?.email || '—'}</Typography.Text>
+                      <Typography.Text>{data?.email || '—'}</Typography.Text>
                     </Space>
                     <Space size={6}>
                       <CalendarOutlined />
-                      <Typography.Text>Joined {new Date().toLocaleDateString('vi-VN')}</Typography.Text>
+                      <Typography.Text>{joinedLabel}</Typography.Text>
                     </Space>
-                    {user?.bankName && (
-                      <Space size={6}>
-                        <BankOutlined />
-                        <Typography.Text>{user.bankName}</Typography.Text>
-                      </Space>
-                    )}
-                    {user?.paymentAccount && (
-                      <Space size={6}>
-                        <Typography.Text>{user.paymentAccount}</Typography.Text>
-                      </Space>
-                    )}
                   </Space>
                 </div>
               </Space>
@@ -105,22 +98,22 @@ const InstructorDetailPage: React.FC = () => {
         <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
           <Col xs={12} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Total Courses" value={data?.stats.courseCount ?? 0} />
+              <Statistic title="Total Courses" value={data?.total_courses ?? 0} />
             </Card>
           </Col>
           <Col xs={12} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Total Students" value={data?.stats.studentCount ?? 0} />
+              <Statistic title="Total Students" value={data?.total_students ?? 0} />
             </Card>
           </Col>
           <Col xs={12} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Total Revenue" prefix="$" value={data?.stats.revenue ?? 0} precision={2} />
+              <Statistic title="Total Revenue" prefix="$" value={data?.total_revenue ?? 0} precision={2} />
             </Card>
           </Col>
           <Col xs={12} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Avg Rating" value={data?.stats.avgRating ?? 0} precision={1} />
+              <Statistic title="Avg Rating" value={data?.avg_rating ?? 0} precision={1} />
             </Card>
           </Col>
         </Row>
@@ -148,26 +141,10 @@ const InstructorDetailPage: React.FC = () => {
             },
             {
               key: 'courses',
-              label: `Courses (${data?.courses.length ?? 0})`,
+              label: `Courses (${data?.total_courses ?? 0})`,
               children: (
                 <Card bordered={false} style={{ borderRadius: 12 }}>
-                  {data?.courses?.length ? (
-                    <Row gutter={[12, 12]}>
-                      {data.courses.map((course) => (
-                        <Col key={course.courseId} xs={24} md={12}>
-                          <Card size="small" hoverable style={{ borderRadius: 10 }} onClick={() => navigate(`/courses/${course.courseId}`)}>
-                            <Space direction="vertical" size={4}>
-                              <Typography.Text strong>{course.courseName}</Typography.Text>
-                              <Typography.Text type="secondary">{course.language} • Lectures: {course.lectures}</Typography.Text>
-                              <Typography.Text type="secondary">Price: ${(course.price ?? 0).toFixed(2)}</Typography.Text>
-                            </Space>
-                          </Card>
-                        </Col>
-                      ))}
-                    </Row>
-                  ) : (
-                    <Empty description="No courses yet" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                  )}
+                  <Empty description="No courses yet" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 </Card>
               ),
             },

@@ -158,7 +158,7 @@ export const getInstructors = async (
   }
 };
 
-export const getInstructorDetail = async (id: number): Promise<InstructorDetail> => {
+export const getInstructorDetail = async (id: string): Promise<InstructorDetail> => {
   try {
     const response = await apiClient.get(`/users/instructors/${id}`);
     return response.data;

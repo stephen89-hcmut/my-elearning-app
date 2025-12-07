@@ -196,82 +196,15 @@ export class UsersService implements OnModuleInit {
   }
 
   async getInstructorDetail(id: string) {
-    const instructor = await this.instructorsRepository.findOne({
-      where: { instructorId: id as any },
-      relations: ['user'],
-    });
+    // Use stored procedure to fetch instructor detail summary
+    const result = await this.dataSource.query('CALL sp_GetInstructorDetails(?)', [id]);
+    const row = Array.isArray(result?.[0]) && result[0].length ? result[0][0] : null;
 
-    if (!instructor) {
+    if (!row) {
       throw new NotFoundException(`Instructor with ID ${id} not found`);
     }
 
-    const [statsRow] = await this.dataSource.query(
-      `SELECT
-        COUNT(DISTINCT ci.course_id) as courseCount,
-        COUNT(DISTINCT e.student_id) as studentCount,
-        COALESCE(SUM(CASE WHEN t.payment_status = 'completed' THEN t.price END), 0) as revenue
-      FROM INSTRUCTORS i
-      LEFT JOIN COURSE_INSTRUCTORS ci ON ci.instructor_id = i.instructor_id
-      LEFT JOIN ENROLLMENTS e ON e.course_id = ci.course_id
-      LEFT JOIN TRANSACTIONS t ON t.course_id = ci.course_id AND t.instructor_id = i.instructor_id
-      WHERE i.instructor_id = ?
-      GROUP BY i.instructor_id`,
-      [id],
-    );
-
-    const revenueByCourse = await this.dataSource.query(
-      `SELECT c.course_name as courseName,
-              COALESCE(SUM(CASE WHEN t.payment_status = 'completed' THEN t.price END), 0) as revenue
-       FROM COURSE_INSTRUCTORS ci
-       JOIN COURSES c ON c.course_id = ci.course_id
-       LEFT JOIN TRANSACTIONS t ON t.course_id = ci.course_id AND t.instructor_id = ci.instructor_id AND t.payment_status = 'completed'
-       WHERE ci.instructor_id = ?
-       GROUP BY c.course_id, c.course_name
-       ORDER BY c.course_name`,
-      [id],
-    );
-
-    const coursesByLevel = await this.dataSource.query(
-      `SELECT c.level, COUNT(*) as count
-       FROM COURSE_INSTRUCTORS ci
-       JOIN COURSES c ON c.course_id = ci.course_id
-       WHERE ci.instructor_id = ?
-       GROUP BY c.level`,
-      [id],
-    );
-
-    const courses = await this.dataSource.query(
-      `SELECT c.course_id as courseId,
-              c.course_name as courseName,
-              c.language,
-              c.level,
-              c.total_lectures as lectures,
-              c.price,
-              COALESCE(e.student_count, 0) as studentCount
-       FROM COURSE_INSTRUCTORS ci
-       JOIN COURSES c ON c.course_id = ci.course_id
-       LEFT JOIN (
-         SELECT course_id, COUNT(*) as student_count
-         FROM ENROLLMENTS
-         GROUP BY course_id
-       ) e ON e.course_id = c.course_id
-       WHERE ci.instructor_id = ?
-       ORDER BY c.course_name`,
-      [id],
-    );
-
-    return {
-      instructor,
-      stats: {
-        courseCount: Number(statsRow?.courseCount || 0),
-        studentCount: Number(statsRow?.studentCount || 0),
-        revenue: Number(statsRow?.revenue || 0),
-        avgRating: null,
-      },
-      revenueByCourse,
-      coursesByLevel: coursesByLevel.map((row: any) => ({ level: Number(row.level), count: Number(row.count) })),
-      courses,
-    };
+    return row;
   }
 
   async deleteStudent(id: string): Promise<void> {
