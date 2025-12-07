@@ -6,8 +6,6 @@ import {
   ManyToMany,
   JoinTable,
   OneToMany,
-  CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { Topic } from './topic.entity';
 import { Section } from './section.entity';
@@ -40,12 +38,6 @@ export class Course {
 
   @Column({ name: 'total_lectures', default: 0 })
   totalLectures: number;
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
 
   @ManyToMany(() => Topic)
   @JoinTable({

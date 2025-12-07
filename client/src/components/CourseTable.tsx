@@ -1,16 +1,6 @@
 // src/components/CourseTable.tsx
-import React, { useState } from 'react';
-import {
-  Table,
-  Card,
-  Row,
-  Col,
-  Select,
-  Button,
-  Space,
-  Tag,
-  Popconfirm,
-} from 'antd';
+import React from 'react';
+import { Table, Card, Button, Space, Popconfirm, Tag } from 'antd';
 import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { Course, CourseLevel } from '@/types';
@@ -31,23 +21,12 @@ const CourseTable: React.FC<CourseTableProps> = ({
   onView,
 }) => {
   const navigate = useNavigate();
-  const [selectedTopic, setSelectedTopic] = useState<string | undefined>();
-  const [selectedLevel, setSelectedLevel] = useState<string | undefined>();
-
-  // Filter courses
-  const filteredCourses = courses.filter((course) => {
-    const topicMatch = !selectedTopic || course.topics?.some((t) => t.topicId === Number(selectedTopic));
-    const levelMatch = !selectedLevel || course.level === Number(selectedLevel);
-    return topicMatch && levelMatch;
-  });
-
   const columns = [
     {
-      title: 'ID',
-      dataIndex: 'courseId',
-      key: 'courseId',
+      title: 'No',
+      key: 'index',
       width: 60,
-      render: (id: number) => `#${id}`,
+      render: (_: any, __: Course, index: number) => index + 1,
     },
     {
       title: 'Course Name',
@@ -56,20 +35,9 @@ const CourseTable: React.FC<CourseTableProps> = ({
       render: (text: string) => <span style={{ fontWeight: 500 }}>{text}</span>,
     },
     {
-      title: 'Instructor',
-      dataIndex: 'instructors',
-      key: 'instructor',
-      render: (instructors: any[]) => (
-        <span>{instructors?.[0]?.user?.firstName} {instructors?.[0]?.user?.lastName}</span>
-      ),
-    },
-    {
-      title: 'Topic',
-      dataIndex: 'topics',
-      key: 'topic',
-      render: (topics: any[]) => (
-        <Tag color="blue">{topics?.[0]?.topicName || 'N/A'}</Tag>
-      ),
+      title: 'Language',
+      dataIndex: 'language',
+      key: 'language',
     },
     {
       title: 'Price',
@@ -81,17 +49,16 @@ const CourseTable: React.FC<CourseTableProps> = ({
       },
     },
     {
-      title: 'Status',
+      title: 'Level',
       dataIndex: 'level',
-      key: 'status',
+      key: 'level',
       render: (level: CourseLevel) => {
-        const statusMap: Record<CourseLevel, { text: string; color: string }> = {
-          [CourseLevel.BEGINNER]: { text: 'Published', color: 'green' },
-          [CourseLevel.INTERMEDIATE]: { text: 'Published', color: 'green' },
-          [CourseLevel.ADVANCED]: { text: 'Published', color: 'green' },
+        const labelMap: Record<CourseLevel, string> = {
+          [CourseLevel.BEGINNER]: 'Beginner',
+          [CourseLevel.INTERMEDIATE]: 'Intermediate',
+          [CourseLevel.ADVANCED]: 'Advanced',
         };
-        const status = statusMap[level] || { text: 'Draft', color: 'gray' };
-        return <Tag color={status.color}>{status.text}</Tag>;
+        return <Tag color="blue">{labelMap[level] || 'N/A'}</Tag>;
       },
     },
     {
@@ -134,18 +101,6 @@ const CourseTable: React.FC<CourseTableProps> = ({
     },
   ];
 
-  const topicsOptions = Array.from(
-    new Set(courses.flatMap((c) => c.topics?.map((t) => t.topicId) || []))
-  ).map((topicId) => {
-    const topic = courses
-      .flatMap((c) => c.topics)
-      .find((t) => t?.topicId === topicId);
-    return {
-      label: topic?.topicName || '',
-      value: topicId,
-    };
-  });
-
   return (
     <Card
       title="Course List"
@@ -155,38 +110,13 @@ const CourseTable: React.FC<CourseTableProps> = ({
         borderRadius: '8px',
       }}
     >
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={12} lg={8}>
-          <Select
-            placeholder="Filter by Topic"
-            allowClear
-            style={{ width: '100%' }}
-            options={topicsOptions}
-            onChange={setSelectedTopic}
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={8}>
-          <Select
-            placeholder="Filter by Level"
-            allowClear
-            style={{ width: '100%' }}
-            options={[
-              { label: 'Beginner', value: CourseLevel.BEGINNER },
-              { label: 'Intermediate', value: CourseLevel.INTERMEDIATE },
-              { label: 'Advanced', value: CourseLevel.ADVANCED },
-            ]}
-            onChange={setSelectedLevel}
-          />
-        </Col>
-      </Row>
-
       <Table
         columns={columns}
-        dataSource={filteredCourses}
+        dataSource={courses}
         rowKey="courseId"
         loading={loading}
         pagination={{
-          total: filteredCourses.length,
+          total: courses.length,
           pageSize: 10,
           showSizeChanger: true,
           showTotal: (total, range) =>

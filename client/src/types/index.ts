@@ -37,7 +37,7 @@ export interface Topic {
 
 export interface Instructor {
   instructorId: number;
-  qualification?: string;
+  teachingField?: string;
   hourlyRate?: number;
   rating?: number;
   courses?: Course[];

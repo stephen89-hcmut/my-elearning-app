@@ -16,7 +16,8 @@ export class Instructor {
   @PrimaryColumn({ name: 'instructor_id' })
   instructorId: number;
 
-  // Columns not present in current DB are omitted to prevent unknown column errors
+  @Column('text', { name: 'teaching_field', nullable: true })
+  teachingField: string;
 
   @OneToOne(() => User, (user) => user.instructor, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'instructor_id' })

@@ -1,5 +1,5 @@
 // src/modules/courses/entities/topic.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('TOPICS')
 export class Topic {
@@ -12,6 +12,4 @@ export class Topic {
   @Column('text', { nullable: true })
   description: string;
 
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
 }

@@ -5,20 +5,15 @@ import {
   Table,
   Input,
   Space,
-  Tag,
   Avatar,
   Row,
   Col,
   Statistic,
-  Progress,
   Button,
   Spin,
   Alert,
 } from 'antd';
-import {
-  SearchOutlined,
-  MailOutlined,
-} from '@ant-design/icons';
+import { SearchOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { getStudents } from '@/api/courses';
 import { Student } from '@/types';
@@ -51,11 +46,17 @@ const StudentsPage: React.FC = () => {
 
   const studentColumns = [
     {
-      title: 'ID',
+      title: 'No',
+      key: 'index',
+      width: 60,
+      render: (_: any, __: Student, index: number) => index + 1,
+    },
+    {
+      title: 'Id',
       dataIndex: 'studentId',
       key: 'studentId',
-      width: 60,
-      render: (id: number) => `#${id}`,
+      width: 80,
+      render: (id: number) => `${id}`,
     },
     {
       title: 'Student Name',
@@ -65,11 +66,8 @@ const StudentsPage: React.FC = () => {
         if (!user) return 'N/A';
         return (
           <Space>
-            <Avatar
-              size={40}
-              style={{ backgroundColor: '#1890ff' }}
-            >
-              {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+            <Avatar size={40} style={{ backgroundColor: '#1890ff' }}>
+              {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
             </Avatar>
             <div>
               <div style={{ fontWeight: 600 }}>
@@ -84,43 +82,20 @@ const StudentsPage: React.FC = () => {
       },
     },
     {
-      title: 'Email',
-      dataIndex: ['user', 'email'],
-      key: 'email',
-      render: (email: string) => (
-        <a href={`mailto:${email}`}>
-          <MailOutlined style={{ marginRight: 8 }} />
-          {email}
-        </a>
-      ),
-    },
-    {
       title: 'Enrollment Date',
       dataIndex: 'enrollmentDate',
       key: 'enrollmentDate',
-      render: (date: Date) => new Date(date).toLocaleDateString('vi-VN'),
+      render: (date: Date) => (date ? new Date(date).toLocaleDateString('vi-VN') : '—'),
     },
     {
-      title: 'Courses',
-      key: 'courses',
-      align: 'center' as const,
-      render: () => <Tag color="blue">3</Tag>,
+      title: 'Bank Name',
+      key: 'bankName',
+      render: (_: any, record: Student) => record.user?.bankName || '—',
     },
     {
-      title: 'Progress',
-      key: 'progress',
-      render: (_: any) => (
-        <Progress percent={33} size="small" />
-      ),
-    },
-    {
-      title: 'Status',
-      key: 'status',
-      render: (_: any, record: any) => (
-        <Tag color={record.status === 'active' ? 'green' : 'red'}>
-          {record.status === 'active' ? 'Active' : 'Inactive'}
-        </Tag>
-      ),
+      title: 'Pay Account',
+      key: 'paymentAccount',
+      render: (_: any, record: Student) => record.user?.paymentAccount || '—',
     },
   ];
 

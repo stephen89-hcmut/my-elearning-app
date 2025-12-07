@@ -44,10 +44,17 @@ const InstructorsPage: React.FC = () => {
 
   const columns = [
     {
-      title: 'ID',
+      title: 'No',
+      key: 'index',
+      width: 60,
+      render: (_: any, __: any, index: number) => index + 1,
+    },
+    {
+      title: 'Id',
       dataIndex: 'instructorId',
       key: 'instructorId',
-      width: 60,
+      width: 80,
+      render: (id: number) => `#${id}`,
     },
     {
       title: 'Instructor Name',
@@ -71,55 +78,20 @@ const InstructorsPage: React.FC = () => {
       ),
     },
     {
-      title: 'Email',
-      dataIndex: 'user',
-      key: 'email',
-      render: (user: any) => (
-        <a href={`mailto:${user.email}`}>
-          <MailOutlined style={{ marginRight: 8 }} />
-          {user.email}
-        </a>
-      ),
-    },
-    {
       title: 'Teaching Field',
-      dataIndex: 'qualification',
-      key: 'qualification',
+      dataIndex: 'teachingField',
+      key: 'teachingField',
+      render: (value: string) => value || '—',
     },
     {
-      title: 'Courses',
-      key: 'courses',
-      align: 'center' as const,
-      render: (_: any, record: any) => (
-        <Tag color="blue">{record.courses?.length || 0}</Tag>
-      ),
+      title: 'Bank Name',
+      key: 'bankName',
+      render: (_: any, record: any) => record.user?.bankName || '—',
     },
     {
-      title: 'Students',
-      key: 'students',
-      align: 'center' as const,
-      render: (_: any) => <span>450</span>,
-    },
-    {
-      title: 'Revenue',
-      key: 'revenue',
-      align: 'right' as const,
-      render: (_: any, record: any) => (
-        <span style={{ color: '#52c41a', fontWeight: 600 }}>
-          ${((record.hourlyRate || 0) * 100).toLocaleString()}
-        </span>
-      ),
-    },
-    {
-      title: 'Rating',
-      key: 'rating',
-      align: 'center' as const,
-      render: (_: any, record: any) => (
-        <Space>
-          <StarOutlined style={{ color: '#faad14' }} />
-          <span>{record.rating || 4.8}</span>
-        </Space>
-      ),
+      title: 'Pay Account',
+      key: 'paymentAccount',
+      render: (_: any, record: any) => record.user?.paymentAccount || '—',
     },
   ];
 
@@ -256,7 +228,7 @@ const InstructorsPage: React.FC = () => {
                           @{instructor.user?.username}
                         </div>
                         <div style={{ fontSize: 12, marginBottom: 8 }}>
-                          <strong>Teaching Field:</strong> {instructor.qualification}
+                          <strong>Teaching Field:</strong> {instructor.teachingField || '—'}
                         </div>
                         <Row gutter={16}>
                           <Col span={12}>
