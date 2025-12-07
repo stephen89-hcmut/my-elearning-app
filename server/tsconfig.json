@@ -28,7 +28,6 @@
   },
   "exclude": [
     "dist",
-    "node_modules",
-    "src/prisma/prisma.queries.example.ts"
+    "node_modules"
   ]
 }
