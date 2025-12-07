@@ -34,11 +34,15 @@ const CourseTable: React.FC<CourseTableProps> = ({
       dataIndex: 'courseName',
       key: 'courseName',
       render: (text: string) => <span style={{ fontWeight: 500 }}>{text}</span>,
+      sorter: (a: Course, b: Course) => (a.courseName || '').localeCompare(b.courseName || ''),
+      sortDirections: ['ascend', 'descend'],
     },
     {
       title: 'Language',
       dataIndex: 'language',
       key: 'language',
+      sorter: (a: Course, b: Course) => (a.language || '').localeCompare(b.language || ''),
+      sortDirections: ['ascend', 'descend'],
     },
     {
       title: 'Price',
@@ -48,6 +52,8 @@ const CourseTable: React.FC<CourseTableProps> = ({
         const numericPrice = Number(price) || 0;
         return `$${numericPrice.toFixed(2)}`;
       },
+      sorter: (a: Course, b: Course) => (Number(a.price) || 0) - (Number(b.price) || 0),
+      sortDirections: ['ascend', 'descend'],
     },
     {
       title: 'Level',
@@ -61,6 +67,12 @@ const CourseTable: React.FC<CourseTableProps> = ({
         };
         return <Tag color="blue">{labelMap[level] || 'N/A'}</Tag>;
       },
+      filters: [
+        { text: 'Beginner', value: CourseLevel.BEGINNER },
+        { text: 'Intermediate', value: CourseLevel.INTERMEDIATE },
+        { text: 'Advanced', value: CourseLevel.ADVANCED },
+      ],
+      onFilter: (value: string | number | boolean, record: Course) => record.level === value,
     },
     {
       title: 'Actions',

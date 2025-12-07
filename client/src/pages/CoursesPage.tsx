@@ -1,17 +1,19 @@
 // src/pages/CoursesPage.tsx
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { message, Button, Form, Alert } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { message, Button, Form, Alert, Input, Select, Space } from 'antd';
+import { PlusOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import { CourseTable, CourseFormModal } from '@/components';
 import { getCourses, deleteCourse, createCourse, updateCourse } from '@/api/courses';
-import { CreateCourseDto, UpdateCourseDto } from '@/types';
+import { CourseLevel, CreateCourseDto, UpdateCourseDto } from '@/types';
 
 const CoursesPage: React.FC = () => {
   const [page] = useState(1);
   const [limit] = useState(10);
   const [formModalVisible, setFormModalVisible] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [levelFilter, setLevelFilter] = useState<CourseLevel | 'all'>('all');
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -88,13 +90,49 @@ const CoursesPage: React.FC = () => {
     }
   };
 
+  const filteredCourses = useMemo(() => {
+    const search = searchTerm.toLowerCase();
+    return (coursesData?.data || []).filter((course) => {
+      const matchesSearch =
+        !search ||
+        course.courseName.toLowerCase().includes(search) ||
+        course.language?.toLowerCase().includes(search);
+      const matchesLevel = levelFilter === 'all' || course.level === levelFilter;
+      return matchesSearch && matchesLevel;
+    });
+  }, [coursesData, levelFilter, searchTerm]);
+
   return (
     <div style={{ padding: 24 }}>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between' }}>
-        <h1>Courses</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-          Create Course
-        </Button>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <h1 style={{ margin: 0 }}>Courses</h1>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <Space size="middle" wrap>
+            <Input
+              placeholder="Search by name or language"
+              prefix={<SearchOutlined />}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: 260 }}
+              allowClear
+            />
+            <Select
+              style={{ width: 180 }}
+              value={levelFilter}
+              onChange={setLevelFilter}
+              suffixIcon={<FilterOutlined />}
+              options={[
+                { label: 'All levels', value: 'all' },
+                { label: 'Beginner', value: CourseLevel.BEGINNER },
+                { label: 'Intermediate', value: CourseLevel.INTERMEDIATE },
+                { label: 'Advanced', value: CourseLevel.ADVANCED },
+              ]}
+            />
+          </Space>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+            Create Course
+          </Button>
+        </div>
       </div>
 
       {coursesError && (
@@ -108,7 +146,7 @@ const CoursesPage: React.FC = () => {
       )}
 
       <CourseTable
-        courses={coursesData?.data || []}
+        courses={filteredCourses}
         loading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}

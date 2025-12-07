@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Card,
   Row,
@@ -12,6 +12,7 @@ import {
   Button,
   Popconfirm,
   message,
+  Select,
 } from 'antd';
 import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -22,6 +23,8 @@ import { useNavigate } from 'react-router-dom';
 
 const InstructorsPage: React.FC = () => {
   const [searchText, setSearchText] = useState('');
+  const [teachingFieldFilter, setTeachingFieldFilter] = useState<string | 'all'>('all');
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'has' | 'missing'>('all');
   const [editVisible, setEditVisible] = useState(false);
   const [selectedInstructor, setSelectedInstructor] = useState<any | null>(null);
   const navigate = useNavigate();
@@ -41,12 +44,29 @@ const InstructorsPage: React.FC = () => {
     const searchLower = searchText.toLowerCase();
     const user = instructor.user;
     if (!user) return false;
-    return (
+
+    const matchesSearch =
       user.firstName.toLowerCase().includes(searchLower) ||
       user.lastName.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower)
-    );
+      user.email.toLowerCase().includes(searchLower);
+
+    const matchesField = teachingFieldFilter === 'all' || instructor.teachingField === teachingFieldFilter;
+    const hasPayment = Boolean(user.paymentAccount);
+    const matchesPayment =
+      paymentFilter === 'all' ||
+      (paymentFilter === 'has' && hasPayment) ||
+      (paymentFilter === 'missing' && !hasPayment);
+
+    return matchesSearch && matchesField && matchesPayment;
   });
+
+  const teachingFieldOptions = useMemo(() => {
+    const fields = new Set<string>();
+    (instructorsData?.data || []).forEach((inst: any) => {
+      if (inst.teachingField) fields.add(inst.teachingField);
+    });
+    return Array.from(fields).map((field) => ({ label: field, value: field }));
+  }, [instructorsData]);
 
   const deleteInstructorMutation = useMutation({
     mutationFn: (id: string) => deleteInstructor(id),
@@ -91,6 +111,12 @@ const InstructorsPage: React.FC = () => {
       title: 'Instructor Name',
       dataIndex: 'user',
       key: 'name',
+      sorter: (a: any, b: any) => {
+        const aName = `${a.user?.firstName || ''} ${a.user?.lastName || ''}`.trim();
+        const bName = `${b.user?.firstName || ''} ${b.user?.lastName || ''}`.trim();
+        return aName.localeCompare(bName);
+      },
+      sortDirections: ['ascend', 'descend'],
       render: (user: any, record: any) => (
         <Space>
           <Avatar
@@ -112,16 +138,22 @@ const InstructorsPage: React.FC = () => {
       title: 'Teaching Field',
       dataIndex: 'teachingField',
       key: 'teachingField',
+      sorter: (a: any, b: any) => (a.teachingField || '').localeCompare(b.teachingField || ''),
+      sortDirections: ['ascend', 'descend'],
       render: (value: string) => value || '—',
     },
     {
       title: 'Bank Name',
       key: 'bankName',
+      sorter: (a: any, b: any) => (a.user?.bankName || '').localeCompare(b.user?.bankName || ''),
+      sortDirections: ['ascend', 'descend'],
       render: (_: any, record: any) => record.user?.bankName || '—',
     },
     {
       title: 'Pay Account',
       key: 'paymentAccount',
+      sorter: (a: any, b: any) => (a.user?.paymentAccount || '').localeCompare(b.user?.paymentAccount || ''),
+      sortDirections: ['ascend', 'descend'],
       render: (_: any, record: any) => record.user?.paymentAccount || '—',
     },
     {
@@ -188,6 +220,25 @@ const InstructorsPage: React.FC = () => {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               style={{ width: 250 }}
+              allowClear
+            />
+            <Select
+              placeholder="Filter by teaching field"
+              value={teachingFieldFilter}
+              onChange={(value) => setTeachingFieldFilter(value)}
+              allowClear={false}
+              style={{ width: 200 }}
+              options={[{ label: 'All fields', value: 'all' }, ...teachingFieldOptions]}
+            />
+            <Select
+              value={paymentFilter}
+              onChange={(value) => setPaymentFilter(value)}
+              style={{ width: 200 }}
+              options={[
+                { label: 'All payment status', value: 'all' },
+                { label: 'Has payment account', value: 'has' },
+                { label: 'Missing payment account', value: 'missing' },
+              ]}
             />
           </Space>
         }

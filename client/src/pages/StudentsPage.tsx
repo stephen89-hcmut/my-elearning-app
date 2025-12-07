@@ -1,5 +1,5 @@
 // src/pages/StudentsPage.tsx
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Card,
   Table,
@@ -11,6 +11,7 @@ import {
   Alert,
   Popconfirm,
   message,
+  Select,
 } from 'antd';
 import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -21,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 
 const StudentsPage: React.FC = () => {
   const [studentsSearch, setStudentsSearch] = useState('');
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'has' | 'missing'>('all');
   const [editVisible, setEditVisible] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const navigate = useNavigate();
@@ -62,17 +64,26 @@ const StudentsPage: React.FC = () => {
   });
 
   // Filter students
-  const filteredStudents = (studentsData?.data || []).filter((student: Student) => {
+  const filteredStudents = useMemo(() => {
     const searchLower = studentsSearch.toLowerCase();
-    const user = student.user;
-    if (!user) return false;
-    return (
-      user.firstName.toLowerCase().includes(searchLower) ||
-      user.lastName.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower) ||
-      user.username.toLowerCase().includes(searchLower)
-    );
-  });
+    return (studentsData?.data || []).filter((student: Student) => {
+      const user = student.user;
+      if (!user) return false;
+      const matchesSearch =
+        user.firstName.toLowerCase().includes(searchLower) ||
+        user.lastName.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower) ||
+        user.username.toLowerCase().includes(searchLower);
+
+      const hasPayment = Boolean(user.paymentAccount);
+      const matchesPayment =
+        paymentFilter === 'all' ||
+        (paymentFilter === 'has' && hasPayment) ||
+        (paymentFilter === 'missing' && !hasPayment);
+
+      return matchesSearch && matchesPayment;
+    });
+  }, [paymentFilter, studentsData, studentsSearch]);
 
   const studentColumns = [
     {
@@ -91,6 +102,12 @@ const StudentsPage: React.FC = () => {
     {
       title: 'Student Name',
       key: 'name',
+      sorter: (a: Student, b: Student) => {
+        const aName = `${a.user?.firstName || ''} ${a.user?.lastName || ''}`.trim();
+        const bName = `${b.user?.firstName || ''} ${b.user?.lastName || ''}`.trim();
+        return aName.localeCompare(bName);
+      },
+      sortDirections: ['ascend', 'descend'],
       render: (_: any, record: Student) => {
         const user = record.user;
         if (!user) return 'N/A';
@@ -115,16 +132,26 @@ const StudentsPage: React.FC = () => {
       title: 'Enrollment Date',
       dataIndex: 'enrollmentDate',
       key: 'enrollmentDate',
+      sorter: (a: Student, b: Student) => {
+        const aDate = a.enrollmentDate ? new Date(a.enrollmentDate).getTime() : 0;
+        const bDate = b.enrollmentDate ? new Date(b.enrollmentDate).getTime() : 0;
+        return aDate - bDate;
+      },
+      sortDirections: ['ascend', 'descend'],
       render: (date: Date) => (date ? new Date(date).toLocaleDateString('vi-VN') : '—'),
     },
     {
       title: 'Bank Name',
       key: 'bankName',
+      sorter: (a: Student, b: Student) => (a.user?.bankName || '').localeCompare(b.user?.bankName || ''),
+      sortDirections: ['ascend', 'descend'],
       render: (_: any, record: Student) => record.user?.bankName || '—',
     },
     {
       title: 'Pay Account',
       key: 'paymentAccount',
+      sorter: (a: Student, b: Student) => (a.user?.paymentAccount || '').localeCompare(b.user?.paymentAccount || ''),
+      sortDirections: ['ascend', 'descend'],
       render: (_: any, record: Student) => record.user?.paymentAccount || '—',
     },
     {
@@ -184,13 +211,24 @@ const StudentsPage: React.FC = () => {
       <Card>
         <Spin spinning={isStudentsLoading}>
           <div>
-            <Space style={{ marginBottom: 16, display: 'flex' }}>
+            <Space style={{ marginBottom: 16, display: 'flex' }} wrap>
               <Input
                 placeholder="Search students..."
                 prefix={<SearchOutlined />}
                 value={studentsSearch}
                 onChange={(e) => setStudentsSearch(e.target.value)}
                 style={{ width: 300 }}
+                allowClear
+              />
+              <Select
+                value={paymentFilter}
+                style={{ width: 200 }}
+                onChange={(value) => setPaymentFilter(value)}
+                options={[
+                  { label: 'All payment status', value: 'all' },
+                  { label: 'Has payment account', value: 'has' },
+                  { label: 'Missing payment account', value: 'missing' },
+                ]}
               />
             </Space>
             <Table<Student>
