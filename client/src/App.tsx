@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Layout } from 'antd';
 import { Sidebar, Header } from '@/components';
-import { Dashboard, CoursesPage, StudentsPage, LoginPage, InstructorsPage } from '@/pages';
+import { Dashboard, CoursesPage, StudentsPage, LoginPage, InstructorsPage, CourseDetailPage, StudentDetailPage, InstructorDetailPage } from '@/pages';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 
 const { Content } = Layout;
@@ -39,10 +39,11 @@ function App() {
           <Route path="/" element={<ProtectedLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="courses" element={<CoursesPage />} />
+            <Route path="courses/:id" element={<CourseDetailPage />} />
             <Route path="students" element={<StudentsPage />} />
+            <Route path="students/:id" element={<StudentDetailPage />} />
             <Route path="instructors" element={<InstructorsPage />} />
-            <Route path="reports" element={<StudentsPage />} />
-            <Route path="settings" element={<StudentsPage />} />
+            <Route path="instructors/:id" element={<InstructorDetailPage />} />
           </Route>
         </Routes>
       </Router>

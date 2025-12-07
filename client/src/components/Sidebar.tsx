@@ -59,18 +59,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapse }) => {
       label: 'Instructors',
       onClick: () => navigate('/instructors'),
     },
-    {
-      key: '/reports',
-      icon: <FileTextOutlined />,
-      label: 'Reports',
-      onClick: () => navigate('/reports'),
-    },
-    {
-      key: '/settings',
-      icon: <SettingOutlined />,
-      label: 'Settings',
-      onClick: () => navigate('/settings'),
-    },
   ];
 
   return (

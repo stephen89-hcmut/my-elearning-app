@@ -1,7 +1,8 @@
 // src/components/CourseTable.tsx
 import React from 'react';
 import { Table, Card, Button, Space, Popconfirm, Tag } from 'antd';
-import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { Course, CourseLevel } from '@/types';
 
 interface CourseTableProps {
@@ -19,6 +20,16 @@ const CourseTable: React.FC<CourseTableProps> = ({
   onDelete,
   onView,
 }) => {
+  const navigate = useNavigate();
+
+  const handleRowNavigate = (courseId: number) => {
+    if (onView) {
+      onView(courseId);
+    } else {
+      navigate(`/courses/${courseId}`);
+    }
+  };
+
   const columns = [
     {
       title: 'No',
@@ -68,15 +79,15 @@ const CourseTable: React.FC<CourseTableProps> = ({
           <Button
             type="text"
             size="small"
-            icon={<EyeOutlined />}
-            onClick={() => onView?.(record.courseId)}
-            title="View"
-          />
-          <Button
-            type="text"
-            size="small"
             icon={<EditOutlined />}
-            onClick={() => onEdit?.(record.courseId) || navigate(`/courses/edit/${record.courseId}`)}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onEdit) {
+                onEdit(record.courseId);
+              } else {
+                navigate(`/courses/edit/${record.courseId}`);
+              }
+            }}
             title="Edit"
           />
           <Popconfirm
@@ -91,6 +102,7 @@ const CourseTable: React.FC<CourseTableProps> = ({
               size="small"
               danger
               icon={<DeleteOutlined />}
+              onClick={(e) => e.stopPropagation()}
               title="Delete"
             />
           </Popconfirm>
@@ -113,6 +125,10 @@ const CourseTable: React.FC<CourseTableProps> = ({
         dataSource={courses}
         rowKey="courseId"
         loading={loading}
+        onRow={(record) => ({
+          onClick: () => handleRowNavigate(record.courseId),
+          style: { cursor: 'pointer' },
+        })}
         pagination={{
           total: courses.length,
           pageSize: 10,

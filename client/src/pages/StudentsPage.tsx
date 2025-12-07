@@ -12,16 +12,18 @@ import {
   Popconfirm,
   message,
 } from 'antd';
-import { SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { getStudents } from '@/api/courses';
 import { Student } from '@/types';
 import { StudentEditModal } from '@/components';
+import { useNavigate } from 'react-router-dom';
 
 const StudentsPage: React.FC = () => {
   const [studentsSearch, setStudentsSearch] = useState('');
   const [editVisible, setEditVisible] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const navigate = useNavigate();
 
   // Fetch students from API
   const {
@@ -105,12 +107,12 @@ const StudentsPage: React.FC = () => {
       width: 140,
       render: (_: any, record: Student) => (
         <Space size="small">
-          <Button type="text" size="small" icon={<EyeOutlined />} onClick={() => message.info(`View student #${record.studentId} (detail modal removed)`)} title="View" />
           <Button
             type="text"
             size="small"
             icon={<EditOutlined />}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setSelectedStudent(record);
               setEditVisible(true);
             }}
@@ -123,7 +125,7 @@ const StudentsPage: React.FC = () => {
             cancelText="No"
             onConfirm={() => message.info(`Deleted student #${record.studentId}`)}
           >
-            <Button type="text" size="small" danger icon={<DeleteOutlined />} title="Delete" />
+            <Button type="text" size="small" danger icon={<DeleteOutlined />} title="Delete" onClick={(e) => e.stopPropagation()} />
           </Popconfirm>
         </Space>
       ),
@@ -159,6 +161,10 @@ const StudentsPage: React.FC = () => {
               columns={studentColumns as any}
               dataSource={filteredStudents}
               rowKey="studentId"
+              onRow={(record) => ({
+                onClick: () => navigate(`/students/${record.studentId}`),
+                style: { cursor: 'pointer' },
+              })}
               pagination={{
                 pageSize: 10,
                 showSizeChanger: true,

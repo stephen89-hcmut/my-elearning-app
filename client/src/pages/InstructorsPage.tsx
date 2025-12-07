@@ -13,15 +13,17 @@ import {
   Popconfirm,
   message,
 } from 'antd';
-import { SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { getInstructors } from '@/api/courses';
 import { InstructorEditModal } from '@/components';
+import { useNavigate } from 'react-router-dom';
 
 const InstructorsPage: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [editVisible, setEditVisible] = useState(false);
   const [selectedInstructor, setSelectedInstructor] = useState<any | null>(null);
+  const navigate = useNavigate();
 
   // Fetch instructors from API
   const {
@@ -101,12 +103,12 @@ const InstructorsPage: React.FC = () => {
       width: 140,
       render: (_: any, record: any) => (
         <Space size="small">
-          <Button type="text" size="small" icon={<EyeOutlined />} onClick={() => message.info(`View instructor #${record.instructorId} (detail modal removed)`)} title="View" />
           <Button
             type="text"
             size="small"
             icon={<EditOutlined />}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setSelectedInstructor(record);
               setEditVisible(true);
             }}
@@ -119,7 +121,7 @@ const InstructorsPage: React.FC = () => {
             cancelText="No"
             onConfirm={() => message.info(`Deleted instructor #${record.instructorId}`)}
           >
-            <Button type="text" size="small" danger icon={<DeleteOutlined />} title="Delete" />
+            <Button type="text" size="small" danger icon={<DeleteOutlined />} title="Delete" onClick={(e) => e.stopPropagation()} />
           </Popconfirm>
         </Space>
       ),
@@ -157,6 +159,10 @@ const InstructorsPage: React.FC = () => {
           <Table<any>
             columns={columns as any}
             dataSource={filteredInstructors.map((inst: any, idx: number) => ({ ...inst, key: inst.instructorId || idx }))}
+            onRow={(record) => ({
+              onClick: () => navigate(`/instructors/${record.instructorId}`),
+              style: { cursor: 'pointer' },
+            })}
             pagination={{ pageSize: 10 }}
           />
         </Spin>

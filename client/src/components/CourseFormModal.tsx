@@ -73,7 +73,7 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
           Cancel
         </Button>,
         <Button key="submit" type="primary" loading={loading} onClick={handleSubmit}>
-          {course ? 'Update Course' : 'Create Course'}
+          Save
         </Button>,
       ]}
       width={700}
