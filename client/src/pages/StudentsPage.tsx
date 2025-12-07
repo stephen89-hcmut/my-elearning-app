@@ -14,8 +14,8 @@ import {
 } from 'antd';
 import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getStudents, deleteStudent } from '@/api/courses';
-import { Student } from '@/types';
+import { getStudents, deleteStudent, updateStudent } from '@/api/courses';
+import { Student, UpdateStudentDto } from '@/types';
 import { StudentEditModal } from '@/components';
 import { useNavigate } from 'react-router-dom';
 
@@ -37,13 +37,27 @@ const StudentsPage: React.FC = () => {
   });
 
   const deleteStudentMutation = useMutation({
-    mutationFn: (id: number) => deleteStudent(id),
+    mutationFn: (id: string) => deleteStudent(id),
     onSuccess: () => {
       message.success('Student deleted');
       queryClient.invalidateQueries({ queryKey: ['students'] });
     },
     onError: (error: any) => {
       message.error(error?.message || 'Failed to delete student');
+    },
+  });
+
+  const updateStudentMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateStudentDto }) => updateStudent(id, data),
+    onSuccess: () => {
+      message.success('Student updated');
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      setEditVisible(false);
+      setSelectedStudent(null);
+    },
+    onError: (error: any) => {
+      const serverMsg = error?.response?.data?.message || error?.message;
+      message.error(serverMsg || 'Failed to update student');
     },
   });
 
@@ -197,15 +211,22 @@ const StudentsPage: React.FC = () => {
       <StudentEditModal
         open={editVisible}
         student={selectedStudent || undefined}
+        loading={updateStudentMutation.isPending}
         onCancel={() => {
           setEditVisible(false);
           setSelectedStudent(null);
         }}
         onSubmit={(values) => {
-          // TODO: wire up to backend update endpoint when available
-          message.success('Student updated (UI only)');
-          setEditVisible(false);
-          setSelectedStudent(null);
+          if (!selectedStudent) return;
+          const payload: UpdateStudentDto = {
+            username: values.username,
+            email: values.email,
+            firstName: values.firstName,
+            lastName: values.lastName,
+            bankName: values.bankName,
+            paymentAccount: values.paymentAccount,
+          };
+          updateStudentMutation.mutate({ id: selectedStudent.studentId, data: payload });
         }}
       />
 

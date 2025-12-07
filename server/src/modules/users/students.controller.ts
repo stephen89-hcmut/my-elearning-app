@@ -1,6 +1,7 @@
 // src/modules/users/students.controller.ts
-import { Controller, Get, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Delete, Param, HttpCode, HttpStatus, Put, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { UpdateStudentDto } from './dto';
 
 @Controller('students')
 export class StudentsController {
@@ -15,5 +16,10 @@ export class StudentsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteStudent(@Param('id') id: string) {
     return this.usersService.deleteStudent(id);
+  }
+
+  @Put(':id')
+  updateStudent(@Param('id') id: string, @Body() body: UpdateStudentDto) {
+    return this.usersService.updateStudent(id, body);
   }
 }
