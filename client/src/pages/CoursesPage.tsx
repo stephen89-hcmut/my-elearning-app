@@ -6,8 +6,10 @@ import { PlusOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons'
 import { CourseTable, CourseFormModal } from '@/components';
 import { getCourses, deleteCourse, createCourse, updateCourse, getTopics, getInstructors } from '@/api/courses';
 import { CourseLevel, CreateCourseDto, UpdateCourseDto, Instructor, Topic } from '@/types';
+import { useNavigate } from 'react-router-dom';
 
 const CoursesPage: React.FC = () => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [formModalVisible, setFormModalVisible] = useState(false);
@@ -179,8 +181,7 @@ const CoursesPage: React.FC = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onView={(id) => {
-          // navigate directly to detail page
-          window.location.href = `/courses/${id}`;
+          navigate(`/courses/${id}`);
         }}
       />
 
