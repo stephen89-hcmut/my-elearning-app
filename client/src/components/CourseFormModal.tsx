@@ -38,8 +38,8 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
         courseName: course.courseName,
         description: course.description,
         language: course.language,
-        price: course.price,
-        minScore: course.minScore,
+        price: Number(course.price ?? 0),
+        minScore: course.minScore !== undefined && course.minScore !== null ? Number(course.minScore) : undefined,
         level: course.level,
       });
     } else if (visible && !course) {
@@ -52,6 +52,8 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
       const values = await form.validateFields();
       const payload = {
         ...values,
+        price: values.price !== undefined && values.price !== null ? Number(values.price) : values.price,
+        minScore: values.minScore !== undefined && values.minScore !== null ? Number(values.minScore) : values.minScore,
         level: values.level !== undefined ? Number(values.level) : undefined,
       } as CreateCourseDto | UpdateCourseDto;
 
@@ -133,7 +135,7 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
               name="price"
               rules={[
                 { required: true, message: 'Please enter price' },
-                { type: 'number', min: 0, message: 'Price must be greater than or equal to 0' },
+                { type: 'number', min: 0, message: 'Price must be greater than or equal to 0', transform: (value) => Number(value) },
               ]}
             >
               <InputNumber
@@ -165,7 +167,7 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
           label="Minimum Score for Certificate (0-100)"
           name="minScore"
           rules={[
-            { type: 'number', min: 0, max: 100, message: 'Score must be between 0 and 100' },
+            { type: 'number', min: 0, max: 100, message: 'Score must be between 0 and 100', transform: (value) => Number(value) },
           ]}
         >
           <InputNumber
