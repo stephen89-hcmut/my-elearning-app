@@ -14,43 +14,32 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { ArrowLeftOutlined, GlobalOutlined, UserOutlined, CalendarOutlined, DollarOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, GlobalOutlined, CalendarOutlined, DollarOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getCourseDetail } from '@/api/courses';
-import { CourseLevel } from '@/types';
-
-const levelLabel: Record<CourseLevel, string> = {
-  [CourseLevel.BEGINNER]: 'Beginner',
-  [CourseLevel.INTERMEDIATE]: 'Intermediate',
-  [CourseLevel.ADVANCED]: 'Advanced',
-};
+import { CourseDetail } from '@/types';
 
 const CourseDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const courseId = Number(id);
+  const courseId = id as string;
 
   const {
     data: course,
     isLoading,
     error,
     refetch,
-  } = useQuery({
+  } = useQuery<CourseDetail>({
     queryKey: ['course-detail', courseId],
     queryFn: () => getCourseDetail(courseId),
-    enabled: !Number.isNaN(courseId),
+    enabled: Boolean(courseId),
   });
-
-  const levelTag = useMemo(() => {
-    if (!course) return null;
-    return <Tag color="green" style={{ borderRadius: 16 }}>{levelLabel[course.level] || 'Level'}</Tag>;
-  }, [course]);
 
   const priceDisplay = useMemo(() => {
     if (!course) return '$0.00';
-    const priceNumber = Number(course.price) || 0;
-    return `$${priceNumber.toFixed(2)}`;
+    const revenue = Number(course.total_revenue) || 0;
+    return `$${revenue.toFixed(2)}`;
   }, [course]);
 
   return (
@@ -81,9 +70,9 @@ const CourseDetailPage: React.FC = () => {
               <Space size={12} direction="vertical" style={{ width: '100%' }}>
                 <Space size={8} wrap>
                   <Typography.Title level={3} style={{ margin: 0 }}>
-                    {course?.courseName || 'Course Detail'}
+                    {course?.course_name || 'Course Detail'}
                   </Typography.Title>
-                  {levelTag}
+                  <Tag color="green" style={{ borderRadius: 16 }}>Course</Tag>
                 </Space>
                 <Typography.Text type="secondary">
                   {course?.description || 'Explore the course content and performance at a glance.'}
@@ -95,17 +84,11 @@ const CourseDetailPage: React.FC = () => {
                   </Space>
                   <Space size={6}>
                     <Typography.Text type="secondary">Min Score:</Typography.Text>
-                    <Typography.Text strong>{course?.minScore ? `${course.minScore}%` : '—'}</Typography.Text>
+                    <Typography.Text strong>{course?.min_score ? `${course.min_score}%` : '—'}</Typography.Text>
                   </Space>
                   <Space size={6}>
                     <CalendarOutlined />
-                    <Typography.Text>{course ? 'Created Date' : '—'}</Typography.Text>
-                  </Space>
-                  <Space size={6}>
-                    <UserOutlined />
-                    <Typography.Text>
-                      {course?.instructor ? `${course.instructor.firstName} ${course.instructor.lastName}` : 'N/A'}
-                    </Typography.Text>
+                    <Typography.Text>Created Date</Typography.Text>
                   </Space>
                 </Space>
               </Space>
@@ -115,7 +98,7 @@ const CourseDetailPage: React.FC = () => {
                 <Typography.Title level={3} style={{ marginBottom: 4, color: '#1a4fff' }}>
                   {priceDisplay}
                 </Typography.Title>
-                <Typography.Text type="secondary">Course Price</Typography.Text>
+                <Typography.Text type="secondary">Total Revenue</Typography.Text>
               </div>
             </Col>
           </Row>
@@ -124,22 +107,22 @@ const CourseDetailPage: React.FC = () => {
         <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
           <Col xs={24} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Total Students" value={course?.studentCount ?? 0} />
+              <Statistic title="Total Students" value={course?.total_students ?? 0} />
             </Card>
           </Col>
           <Col xs={24} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Completed" value={course?.studentCount ? Math.floor((course.studentCount * 0.5)) : 0} suffix="" />
+              <Statistic title="Reviews" value={course?.total_reviews ?? 0} suffix="" />
             </Card>
           </Col>
           <Col xs={24} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Avg Progress" value={67} suffix="%" />
+              <Statistic title="Avg Rating" value={course?.avg_rating ?? 0} precision={1} />
             </Card>
           </Col>
           <Col xs={24} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Revenue" prefix={<DollarOutlined />} value={course?.studentCount ? (course.studentCount * (Number(course?.price) || 0)).toFixed(2) : '0.00'} />
+              <Statistic title="Revenue" prefix={<DollarOutlined />} value={course?.total_revenue ?? 0} precision={2} />
             </Card>
           </Col>
         </Row>
@@ -154,46 +137,30 @@ const CourseDetailPage: React.FC = () => {
                 <Row gutter={[16, 16]}>
                   <Col xs={24} lg={12}>
                     <Card title="Instructor" bordered={false} style={{ borderRadius: 12 }}>
-                      {course?.instructor ? (
-                        <Space direction="vertical">
-                          <Typography.Text strong>
-                            {course.instructor.firstName} {course.instructor.lastName}
-                          </Typography.Text>
-                          <Typography.Text type="secondary">{course.instructor.teachingField || '—'}</Typography.Text>
-                          <Typography.Text type="secondary">{course.instructor.email}</Typography.Text>
-                        </Space>
-                      ) : (
-                        <Empty description="No instructor data" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                      )}
+                      <Empty description="Instructor data not provided" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                     </Card>
                   </Col>
                   <Col xs={24} lg={12}>
                     <Card title="Course Statistics" bordered={false} style={{ borderRadius: 12 }}>
                       <Space direction="vertical" style={{ width: '100%' }} size={12}>
                         <div>
-                          <Typography.Text type="secondary">Completion Rate</Typography.Text>
-                          <div style={{ height: 10, background: '#f0f0f0', borderRadius: 6, marginTop: 6 }}>
-                            <div style={{ width: '51%', height: '100%', background: '#0b0b18', borderRadius: 6 }} />
-                          </div>
-                          <Typography.Text strong>51.1%</Typography.Text>
+                          <Typography.Text type="secondary">Topics</Typography.Text>
+                          <Typography.Text strong>{course?.topics || '—'}</Typography.Text>
                         </div>
                         <div>
-                          <Typography.Text type="secondary">Average Progress</Typography.Text>
-                          <div style={{ height: 10, background: '#f0f0f0', borderRadius: 6, marginTop: 6 }}>
-                            <div style={{ width: '67%', height: '100%', background: '#0b0b18', borderRadius: 6 }} />
-                          </div>
-                          <Typography.Text strong>67%</Typography.Text>
+                          <Typography.Text type="secondary">Average Rating</Typography.Text>
+                          <Typography.Text strong>{course?.avg_rating ?? 0}</Typography.Text>
                         </div>
                         <Divider style={{ margin: '12px 0' }} />
                         <Row gutter={12}>
                           <Col span={12}>
                             <Typography.Text type="secondary">Total Enrollments</Typography.Text>
-                            <Typography.Title level={4} style={{ margin: 0 }}>{course?.studentCount ?? 0}</Typography.Title>
+                            <Typography.Title level={4} style={{ margin: 0 }}>{course?.total_students ?? 0}</Typography.Title>
                           </Col>
                           <Col span={12}>
                             <Typography.Text type="secondary">Total Revenue</Typography.Text>
                             <Typography.Title level={4} style={{ margin: 0 }}>
-                              ${course?.studentCount ? (course.studentCount * (Number(course.price) || 0)).toFixed(2) : '0.00'}
+                              ${course?.total_revenue?.toFixed ? course.total_revenue.toFixed(2) : (Number(course?.total_revenue || 0)).toFixed(2)}
                             </Typography.Title>
                           </Col>
                         </Row>

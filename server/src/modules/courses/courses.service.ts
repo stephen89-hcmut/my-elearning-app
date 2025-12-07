@@ -129,37 +129,13 @@ export class CoursesService {
   }
 
   async getDetail(id: string) {
-    const [row] = await this.dataSource.query(
-      `SELECT c.course_id as courseId,
-              c.course_name as courseName,
-              c.description,
-              c.language,
-              c.price,
-              c.min_score as minScore,
-              c.level,
-              c.total_lectures as totalLectures,
-              COUNT(DISTINCT l.lecture_id) as lectureCount,
-              COUNT(DISTINCT tst.test_id) as testCount,
-              COALESCE(SUM(l.duration), 0) as totalDuration,
-              COUNT(DISTINCT e.student_id) as studentCount
-       FROM COURSES c
-       LEFT JOIN SECTIONS s ON s.course_id = c.course_id
-       LEFT JOIN LECTURES l ON l.section_id = s.section_id
-       LEFT JOIN TESTS tst ON tst.section_id = s.section_id
-       LEFT JOIN ENROLLMENTS e ON e.course_id = c.course_id
-       WHERE c.course_id = ?
-       GROUP BY c.course_id`,
-      [id],
-    );
+    const result = await this.dataSource.query('CALL sp_GetCourseDetails(?)', [id]);
+    const row = Array.isArray(result?.[0]) && result[0].length ? result[0][0] : null;
 
     if (!row) {
       throw new NotFoundException(`Course with ID ${id} not found`);
     }
 
-    return {
-      ...row,
-      topics: [],
-      instructor: null,
-    };
+    return row;
   }
 }

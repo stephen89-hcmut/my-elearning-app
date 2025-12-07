@@ -100,19 +100,16 @@ export interface Course {
   studentCount?: number;
 }
 
-export interface CourseDetail extends Course {
-  lectureCount: number;
-  testCount: number;
-  totalDuration: number;
-  topics: Topic[];
-  instructor?: {
-    instructorId: number;
-    firstName: string;
-    lastName: string;
-    username: string;
-    email: string;
-    teachingField?: string;
-  };
+export interface CourseDetail {
+  course_name: string;
+  language: string;
+  min_score: number;
+  description: string | null;
+  topics: string | null;
+  total_students: number;
+  total_revenue: number;
+  total_reviews: number;
+  avg_rating: number;
 }
 
 export interface Section {
@@ -173,6 +170,15 @@ export interface UpdateCourseDto {
   price?: number;
   minScore?: number;
   level?: CourseLevel;
+}
+
+export interface UpdateStudentDto {
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  bankName?: string;
+  paymentAccount?: string;
 }
 
 export interface ApiResponse<T = any> {
