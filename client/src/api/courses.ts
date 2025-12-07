@@ -1,6 +1,6 @@
 // src/api/courses.ts
 import axios from 'axios';
-import { Course, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic, Student, Instructor } from '@/types';
+import { Course, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic, Student, Instructor, DashboardStats, MonthlyRevenue } from '@/types';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -130,7 +130,7 @@ export const getInstructors = async (
 };
 
 // ======== REPORTS API ========
-export const getDashboardStats = async () => {
+export const getDashboardStats = async (): Promise<DashboardStats> => {
   try {
     const response = await apiClient.get('/reports/statistics');
     return response.data;
@@ -140,7 +140,7 @@ export const getDashboardStats = async () => {
   }
 };
 
-export const getMonthlyRevenue = async () => {
+export const getMonthlyRevenue = async (): Promise<MonthlyRevenue[]> => {
   try {
     const response = await apiClient.get('/reports/revenue');
     return response.data;

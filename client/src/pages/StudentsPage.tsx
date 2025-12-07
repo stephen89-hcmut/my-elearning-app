@@ -6,12 +6,11 @@ import {
   Input,
   Space,
   Avatar,
-  Row,
-  Col,
-  Statistic,
   Button,
   Spin,
   Alert,
+  Popconfirm,
+  message,
 } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
@@ -97,10 +96,26 @@ const StudentsPage: React.FC = () => {
       key: 'paymentAccount',
       render: (_: any, record: Student) => record.user?.paymentAccount || '—',
     },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 140,
+      render: (_: any, record: Student) => (
+        <Space size="small">
+          <Button size="small" onClick={() => message.info(`Edit student #${record.studentId}`)}>Edit</Button>
+          <Popconfirm
+            title="Delete Student"
+            description="Are you sure you want to delete this student?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => message.info(`Deleted student #${record.studentId}`)}
+          >
+            <Button size="small" danger>Delete</Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
   ];
-
-  const totalStudents = studentsData?.data?.length || 0;
-  const activeStudents = (studentsData?.data || []).filter((s: Student) => s.status === 'active').length;
 
   return (
     <div style={{ padding: 24 }}>
@@ -115,32 +130,6 @@ const StudentsPage: React.FC = () => {
           style={{ marginBottom: 16 }}
         />
       )}
-      {/* Statistics */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Total Students"
-              value={totalStudents}
-              valueStyle={{ color: '#1890ff' }}
-              prefix="👨‍🎓"
-              loading={isStudentsLoading}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Active Students"
-              value={activeStudents}
-              valueStyle={{ color: '#52c41a' }}
-              prefix="✅"
-              loading={isStudentsLoading}
-            />
-          </Card>
-        </Col>
-      </Row>
-
       <Card>
         <Spin spinning={isStudentsLoading}>
           <div>

@@ -130,6 +130,7 @@ export interface DashboardStats {
   totalRevenue: string;
   totalCourses: number;
   totalStudents: number;
+  totalInstructors: number;
   avgRating: number;
 }
 

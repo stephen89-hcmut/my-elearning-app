@@ -2,8 +2,8 @@
 import React from 'react';
 import { Row, Col, Spin } from 'antd';
 import { useQuery } from '@tanstack/react-query';
-import { StatisticsCards, RevenueChart, CourseTable } from '@/components';
-import { getCourses, getDashboardStats, getMonthlyRevenue } from '@/api/courses';
+import { StatisticsCards, RevenueChart } from '@/components';
+import { getDashboardStats, getMonthlyRevenue } from '@/api/courses';
 
 const Dashboard: React.FC = () => {
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -16,12 +16,7 @@ const Dashboard: React.FC = () => {
     queryFn: getMonthlyRevenue,
   });
 
-  const { data: coursesData, isLoading: coursesLoading } = useQuery({
-    queryKey: ['courses', 1, 10],
-    queryFn: () => getCourses(1, 10),
-  });
-
-  const loading = statsLoading || revenueLoading || coursesLoading;
+  const loading = statsLoading || revenueLoading;
 
   return (
     <div style={{ padding: 24 }}>
@@ -33,6 +28,7 @@ const Dashboard: React.FC = () => {
             totalRevenue={stats.totalRevenue}
             totalCourses={stats.totalCourses}
             totalStudents={stats.totalStudents}
+            totalInstructors={stats.totalInstructors}
             avgRating={stats.avgRating}
           />
         )}
@@ -43,16 +39,6 @@ const Dashboard: React.FC = () => {
           </Col>
         </Row>
 
-        <Row gutter={[16, 16]}>
-          <Col xs={24}>
-            {coursesData && (
-              <CourseTable
-                courses={coursesData.data}
-                loading={coursesLoading}
-              />
-            )}
-          </Col>
-        </Row>
       </Spin>
     </div>
   );

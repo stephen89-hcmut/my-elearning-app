@@ -13,41 +13,42 @@ export class ReportsService {
   ) {}
 
   async getDashboardStats() {
-    // This can call a stored procedure or perform aggregation
     const totalCourses = await this.coursesRepository.count();
-    const totalRevenue = (await this.dataSource.query(
-      'SELECT SUM(price) as total FROM COURSES',
-    ))[0]?.total || 0;
+
+    const revenueRow = (await this.dataSource.query(
+      "SELECT COALESCE(SUM(price), 0) as total FROM TRANSACTIONS WHERE payment_status = 'completed'",
+    ))[0];
+    const totalRevenue = Number(revenueRow?.total || 0);
+
+    const studentsRow = (await this.dataSource.query(
+      'SELECT COUNT(*) as total FROM STUDENTS',
+    ))[0];
+    const instructorsRow = (await this.dataSource.query(
+      'SELECT COUNT(*) as total FROM INSTRUCTORS',
+    ))[0];
 
     return {
-      totalRevenue: `$${totalRevenue || '0.00'}`,
+      totalRevenue: `$${totalRevenue.toFixed(2)}`,
       totalCourses,
-      totalStudents: 1203, // Mock for now
-      avgRating: 4.8, // Mock for now
+      totalStudents: Number(studentsRow?.total || 0),
+      totalInstructors: Number(instructorsRow?.total || 0),
+      avgRating: 0,
     };
   }
 
   async getMonthlyRevenue(month?: number, year?: number) {
-    // Mock monthly revenue data
-    const monthlyData = [
-      { month: 'Jan', revenue: 4000 },
-      { month: 'Feb', revenue: 3000 },
-      { month: 'Mar', revenue: 2000 },
-      { month: 'Apr', revenue: 2780 },
-      { month: 'May', revenue: 1890 },
-      { month: 'Jun', revenue: 2390 },
-      { month: 'Jul', revenue: 3490 },
-      { month: 'Aug', revenue: 2100 },
-      { month: 'Sep', revenue: 2800 },
-      { month: 'Oct', revenue: 3200 },
-      { month: 'Nov', revenue: 2600 },
-      { month: 'Dec', revenue: 3100 },
-    ];
+    const monthly = await this.dataSource.query(
+      `SELECT DATE_FORMAT(payment_date, '%b') as month, SUM(price) as revenue
+       FROM TRANSACTIONS
+       WHERE payment_status = 'completed'
+       GROUP BY MONTH(payment_date), DATE_FORMAT(payment_date, '%b')
+       ORDER BY MONTH(payment_date)`
+    );
 
-    // In production, call stored procedure:
-    // return this.dataSource.query('CALL sp_GetMonthlyRevenue(?, ?)', [month, year]);
-
-    return monthlyData;
+    return monthly.map((row: any) => ({
+      month: row.month,
+      revenue: Number(row.revenue || 0),
+    }));
   }
 
   async getCourseStats() {
