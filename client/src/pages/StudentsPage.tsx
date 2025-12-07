@@ -13,8 +13,8 @@ import {
   message,
 } from 'antd';
 import { SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
-import { getStudents } from '@/api/courses';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getStudents, deleteStudent } from '@/api/courses';
 import { Student } from '@/types';
 import { StudentEditModal } from '@/components';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +24,7 @@ const StudentsPage: React.FC = () => {
   const [editVisible, setEditVisible] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Fetch students from API
   const {
@@ -33,6 +34,17 @@ const StudentsPage: React.FC = () => {
   } = useQuery({
     queryKey: ['students'],
     queryFn: () => getStudents(),
+  });
+
+  const deleteStudentMutation = useMutation({
+    mutationFn: (id: number) => deleteStudent(id),
+    onSuccess: () => {
+      message.success('Student deleted');
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+    onError: (error: any) => {
+      message.error(error?.message || 'Failed to delete student');
+    },
   });
 
   // Filter students
@@ -60,7 +72,7 @@ const StudentsPage: React.FC = () => {
       dataIndex: 'studentId',
       key: 'studentId',
       width: 80,
-      render: (id: number) => `${id}`,
+      render: (id: string) => id,
     },
     {
       title: 'Student Name',
@@ -123,7 +135,7 @@ const StudentsPage: React.FC = () => {
             description="Are you sure you want to delete this student?"
             okText="Yes"
             cancelText="No"
-            onConfirm={() => message.info(`Deleted student #${record.studentId}`)}
+            onConfirm={() => deleteStudentMutation.mutate(record.studentId)}
           >
             <Button type="text" size="small" danger icon={<DeleteOutlined />} title="Delete" onClick={(e) => e.stopPropagation()} />
           </Popconfirm>
@@ -161,10 +173,6 @@ const StudentsPage: React.FC = () => {
               columns={studentColumns as any}
               dataSource={filteredStudents}
               rowKey="studentId"
-              onRow={(record) => ({
-                onClick: () => navigate(`/students/${record.studentId}`),
-                style: { cursor: 'pointer' },
-              })}
               pagination={{
                 pageSize: 10,
                 showSizeChanger: true,

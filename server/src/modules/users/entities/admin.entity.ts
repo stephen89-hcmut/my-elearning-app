@@ -14,9 +14,6 @@ export class Admin {
   @PrimaryColumn({ name: 'admin_id' })
   adminId: number;
 
-  @Column('text', { nullable: true })
-  permissions: string;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

@@ -13,8 +13,8 @@ import { Enrollment } from '@/modules/courses/entities/enrollment.entity';
 
 @Entity('STUDENTS')
 export class Student {
-  @PrimaryColumn({ name: 'student_id' })
-  studentId: number;
+  @PrimaryColumn({ name: 'student_id', type: 'varchar' })
+  studentId: string;
 
   @Column({ name: 'enrollment_date', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   enrollmentDate: Date;

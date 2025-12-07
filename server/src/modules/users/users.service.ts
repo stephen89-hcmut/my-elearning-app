@@ -87,7 +87,7 @@ export class UsersService implements OnModuleInit {
     // Create role-specific record
     if (savedUser.role === UserRole.STUDENT) {
       await this.studentsRepository.save({
-        studentId: savedUser.userId,
+        studentId: String(savedUser.userId),
         user: savedUser,
       });
     } else if (savedUser.role === UserRole.INSTRUCTOR) {
@@ -183,7 +183,7 @@ export class UsersService implements OnModuleInit {
     };
   }
 
-  async getStudentDetail(id: number) {
+  async getStudentDetail(id: string) {
     const student = await this.studentsRepository.findOne({
       where: { studentId: id },
       relations: ['user'],
@@ -240,9 +240,9 @@ export class UsersService implements OnModuleInit {
     };
   }
 
-  async getInstructorDetail(id: number) {
+  async getInstructorDetail(id: string) {
     const instructor = await this.instructorsRepository.findOne({
-      where: { instructorId: id },
+      where: { instructorId: id as any },
       relations: ['user'],
     });
 
@@ -317,5 +317,21 @@ export class UsersService implements OnModuleInit {
       coursesByLevel: coursesByLevel.map((row: any) => ({ level: Number(row.level), count: Number(row.count) })),
       courses,
     };
+  }
+
+  async deleteStudent(id: string): Promise<void> {
+    const student = await this.studentsRepository.findOne({ where: { studentId: id } });
+    if (!student) {
+      throw new NotFoundException(`Student with ID ${id} not found`);
+    }
+    await this.dataSource.query('CALL sp_DeleteUser(?)', [id]);
+  }
+
+  async deleteInstructor(id: string): Promise<void> {
+    const instructor = await this.instructorsRepository.findOne({ where: { instructorId: id as any } });
+    if (!instructor) {
+      throw new NotFoundException(`Instructor with ID ${id} not found`);
+    }
+    await this.dataSource.query('CALL sp_DeleteUser(?)', [id]);
   }
 }

@@ -3,8 +3,10 @@ import {
   Controller,
   Get,
   Query,
-  ParseIntPipe,
   Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 
@@ -14,27 +16,43 @@ export class UsersController {
 
   @Get('students')
   getStudents(
-    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.usersService.getStudents(page, limit);
+    const pageNum = page ? Number(page) : 1;
+    const limitNum = limit ? Number(limit) : 10;
+    return this.usersService.getStudents(pageNum, limitNum);
   }
 
   @Get('instructors')
   getInstructors(
-    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.usersService.getInstructors(page, limit);
+    const pageNum = page ? Number(page) : 1;
+    const limitNum = limit ? Number(limit) : 10;
+    return this.usersService.getInstructors(pageNum, limitNum);
   }
 
   @Get('students/:id')
-  getStudentDetail(@Param('id', ParseIntPipe) id: number) {
+  getStudentDetail(@Param('id') id: string) {
     return this.usersService.getStudentDetail(id);
   }
 
   @Get('instructors/:id')
-  getInstructorDetail(@Param('id', ParseIntPipe) id: number) {
+  getInstructorDetail(@Param('id') id: string) {
     return this.usersService.getInstructorDetail(id);
+  }
+
+  @Delete('students/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteStudent(@Param('id') id: string) {
+    return this.usersService.deleteStudent(id);
+  }
+
+  @Delete('instructors/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteInstructor(@Param('id') id: string) {
+    return this.usersService.deleteInstructor(id);
   }
 }
