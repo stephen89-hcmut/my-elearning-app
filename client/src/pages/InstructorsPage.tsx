@@ -12,6 +12,7 @@ import {
   Empty,
   Spin,
   Alert,
+  Button,
 } from 'antd';
 import { SearchOutlined, MailOutlined, StarOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
@@ -196,13 +197,16 @@ const InstructorsPage: React.FC = () => {
       <Card
         title="Instructor List"
         extra={
-          <Input
-            placeholder="Search instructors..."
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 250 }}
-          />
+          <Space>
+            <Input
+              placeholder="Search instructors..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 250 }}
+            />
+            <Button type="primary">+ Add Instructor</Button>
+          </Space>
         }
       >
         <Spin spinning={isLoading}>

@@ -3,15 +3,11 @@ import React from 'react';
 import { Layout, Input, Button, Badge } from 'antd';
 import {
   BellOutlined,
-  PlusOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 
 const { Header } = Layout;
 
 const AppHeader: React.FC = () => {
-  const navigate = useNavigate();
-
   return (
     <Header
       style={{
@@ -38,13 +34,6 @@ const AppHeader: React.FC = () => {
         <Badge count={3} color="#ff4d4f">
           <Button type="text" icon={<BellOutlined style={{ fontSize: 18 }} />} />
         </Badge>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate('/courses/create')}
-        >
-          Create New Course
-        </Button>
       </div>
     </Header>
   );

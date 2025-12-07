@@ -113,7 +113,7 @@ const CoursesPage: React.FC = () => {
   return (
     <div style={{ padding: 24 }}>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between' }}>
-        <h1>Courses Management</h1>
+        <h1>Courses</h1>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
           Create Course
         </Button>

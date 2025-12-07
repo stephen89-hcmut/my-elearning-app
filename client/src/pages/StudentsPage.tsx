@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import {
   Card,
   Table,
-  Tabs,
   Input,
   Space,
   Tag,
@@ -21,12 +20,11 @@ import {
   MailOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
-import { getStudents, getInstructors } from '@/api/courses';
-import { Student, Instructor } from '@/types';
+import { getStudents } from '@/api/courses';
+import { Student } from '@/types';
 
 const StudentsPage: React.FC = () => {
   const [studentsSearch, setStudentsSearch] = useState('');
-  const [instructorsSearch, setInstructorsSearch] = useState('');
 
   // Fetch students from API
   const {
@@ -38,33 +36,10 @@ const StudentsPage: React.FC = () => {
     queryFn: () => getStudents(),
   });
 
-  // Fetch instructors from API
-  const {
-    data: instructorsData = { data: [] },
-    isLoading: isInstructorsLoading,
-    error: instructorsError,
-  } = useQuery({
-    queryKey: ['instructors'],
-    queryFn: () => getInstructors(),
-  });
-
   // Filter students
   const filteredStudents = (studentsData?.data || []).filter((student: Student) => {
     const searchLower = studentsSearch.toLowerCase();
     const user = student.user;
-    if (!user) return false;
-    return (
-      user.firstName.toLowerCase().includes(searchLower) ||
-      user.lastName.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower) ||
-      user.username.toLowerCase().includes(searchLower)
-    );
-  });
-
-  // Filter instructors
-  const filteredInstructors = (instructorsData?.data || []).filter((instructor: Instructor) => {
-    const searchLower = instructorsSearch.toLowerCase();
-    const user = instructor.user;
     if (!user) return false;
     return (
       user.firstName.toLowerCase().includes(searchLower) ||
@@ -149,83 +124,12 @@ const StudentsPage: React.FC = () => {
     },
   ];
 
-  const instructorColumns = [
-    {
-      title: 'ID',
-      dataIndex: 'instructorId',
-      key: 'instructorId',
-      width: 60,
-      render: (id: number) => `#${id}`,
-    },
-    {
-      title: 'Instructor Name',
-      key: 'name',
-      render: (_: any, record: Instructor) => {
-        const user = record.user;
-        if (!user) return 'N/A';
-        return (
-          <Space>
-            <Avatar
-              size={40}
-              style={{ backgroundColor: '#1890ff' }}
-            >
-              {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-            </Avatar>
-            <div>
-              <div style={{ fontWeight: 600 }}>
-                {user.firstName} {user.lastName}
-              </div>
-              <div style={{ color: '#8c8c8c', fontSize: 12 }}>
-                @{user.username}
-              </div>
-            </div>
-          </Space>
-        );
-      },
-    },
-    {
-      title: 'Email',
-      dataIndex: ['user', 'email'],
-      key: 'email',
-      render: (email: string) => (
-        <a href={`mailto:${email}`}>
-          <MailOutlined style={{ marginRight: 8 }} />
-          {email}
-        </a>
-      ),
-    },
-    {
-      title: 'Teaching Field',
-      dataIndex: 'qualification',
-      key: 'qualification',
-      render: (qualification: string) => qualification || 'N/A',
-    },
-    {
-      title: 'Courses',
-      key: 'courses',
-      align: 'center' as const,
-      render: (_: any, record: any) => (
-        <Tag color="blue">{record.courses?.length || 0}</Tag>
-      ),
-    },
-    {
-      title: 'Hourly Rate',
-      dataIndex: 'hourlyRate',
-      key: 'hourlyRate',
-      render: (rate: number) => (
-        <span style={{ color: '#52c41a', fontWeight: 600 }}>
-          ${rate}
-        </span>
-      ),
-    },
-  ];
-
   const totalStudents = studentsData?.data?.length || 0;
   const activeStudents = (studentsData?.data || []).filter((s: Student) => s.status === 'active').length;
 
   return (
     <div style={{ padding: 24 }}>
-      <h1 style={{ marginBottom: 24 }}>Students & Instructors</h1>
+      <h1 style={{ marginBottom: 24 }}>Students</h1>
 
       {/* Error alerts */}
       {studentsError && (
@@ -236,15 +140,6 @@ const StudentsPage: React.FC = () => {
           style={{ marginBottom: 16 }}
         />
       )}
-      {instructorsError && (
-        <Alert
-          message="Failed to load instructors"
-          type="error"
-          showIcon
-          style={{ marginBottom: 16 }}
-        />
-      )}
-
       {/* Statistics */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} md={6}>
@@ -269,97 +164,33 @@ const StudentsPage: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Total Instructors"
-              value={instructorsData?.data?.length || 0}
-              valueStyle={{ color: '#faad14' }}
-              prefix="👨‍🏫"
-              loading={isInstructorsLoading}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Avg Rating"
-              value={4.5}
-              suffix="/5"
-              valueStyle={{ color: '#722ed1' }}
-              prefix="⭐"
-              precision={1}
-            />
-          </Card>
-        </Col>
       </Row>
 
-      {/* Tables */}
       <Card>
-        <Spin spinning={isStudentsLoading || isInstructorsLoading}>
-          <Tabs
-            defaultActiveKey="students"
-            items={[
-              {
-                key: 'students',
-                label: `Students (${filteredStudents.length})`,
-                children: (
-                  <div>
-                    <Space style={{ marginBottom: 16, display: 'flex' }}>
-                      <Input
-                        placeholder="Search students..."
-                        prefix={<SearchOutlined />}
-                        value={studentsSearch}
-                        onChange={(e) => setStudentsSearch(e.target.value)}
-                        style={{ width: 300 }}
-                      />
-                      <Button type="primary">+ Add Student</Button>
-                    </Space>
-                    <Table<Student>
-                      columns={studentColumns as any}
-                      dataSource={filteredStudents}
-                      rowKey="studentId"
-                      pagination={{
-                        pageSize: 10,
-                        showSizeChanger: true,
-                        showTotal: (total, range) =>
-                          `Showing ${range[0]}-${range[1]} of ${total}`,
-                      }}
-                    />
-                  </div>
-                ),
-              },
-              {
-                key: 'instructors',
-                label: `Instructors (${filteredInstructors.length})`,
-                children: (
-                  <div>
-                    <Space style={{ marginBottom: 16, display: 'flex' }}>
-                      <Input
-                        placeholder="Search instructors..."
-                        prefix={<SearchOutlined />}
-                        value={instructorsSearch}
-                        onChange={(e) => setInstructorsSearch(e.target.value)}
-                        style={{ width: 300 }}
-                      />
-                      <Button type="primary">+ Add Instructor</Button>
-                    </Space>
-                    <Table<Instructor>
-                      columns={instructorColumns as any}
-                      dataSource={filteredInstructors}
-                      rowKey="instructorId"
-                      pagination={{
-                        pageSize: 10,
-                        showSizeChanger: true,
-                        showTotal: (total, range) =>
-                          `Showing ${range[0]}-${range[1]} of ${total}`,
-                      }}
-                    />
-                  </div>
-                ),
-              },
-            ]}
-          />
+        <Spin spinning={isStudentsLoading}>
+          <div>
+            <Space style={{ marginBottom: 16, display: 'flex' }}>
+              <Input
+                placeholder="Search students..."
+                prefix={<SearchOutlined />}
+                value={studentsSearch}
+                onChange={(e) => setStudentsSearch(e.target.value)}
+                style={{ width: 300 }}
+              />
+              <Button type="primary">+ Add Student</Button>
+            </Space>
+            <Table<Student>
+              columns={studentColumns as any}
+              dataSource={filteredStudents}
+              rowKey="studentId"
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: (total, range) =>
+                  `Showing ${range[0]}-${range[1]} of ${total}`,
+              }}
+            />
+          </div>
         </Spin>
       </Card>
     </div>

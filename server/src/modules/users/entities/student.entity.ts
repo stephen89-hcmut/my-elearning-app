@@ -19,9 +19,6 @@ export class Student {
   @Column({ name: 'enrollment_date', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   enrollmentDate: Date;
 
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
-
   @OneToOne(() => User, (user) => user.student, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'student_id' })
   user: User;

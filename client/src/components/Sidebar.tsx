@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapse }) => {
     {
       key: '/courses',
       icon: <BookOutlined />,
-      label: 'Courses Management',
+      label: 'Courses',
       onClick: () => navigate('/courses'),
     },
     {

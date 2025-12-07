@@ -16,14 +16,7 @@ export class Instructor {
   @PrimaryColumn({ name: 'instructor_id' })
   instructorId: number;
 
-  @Column('text', { name: 'qualification', nullable: true })
-  qualification: string;
-
-  @Column('decimal', { name: 'hourly_rate', precision: 10, scale: 2, nullable: true })
-  hourlyRate: number;
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  // Columns not present in current DB are omitted to prevent unknown column errors
 
   @OneToOne(() => User, (user) => user.instructor, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'instructor_id' })
