@@ -5,8 +5,8 @@ import { Instructor } from '@/modules/users/entities/instructor.entity';
 
 @Entity('COURSE_INSTRUCTORS')
 export class CourseInstructor {
-  @PrimaryColumn({ name: 'course_id' })
-  courseId: number;
+  @PrimaryColumn({ name: 'course_id', type: 'varchar', length: 20 })
+  courseId: string;
 
   @PrimaryColumn({ name: 'instructor_id' })
   instructorId: number;

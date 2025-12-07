@@ -12,7 +12,7 @@ import {
   Popconfirm,
   message,
 } from 'antd';
-import { SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getStudents, deleteStudent } from '@/api/courses';
 import { Student } from '@/types';
@@ -129,6 +129,16 @@ const StudentsPage: React.FC = () => {
               setEditVisible(true);
             }}
             title="Edit"
+          />
+          <Button
+            type="text"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/students/${record.studentId}`);
+            }}
+            title="View"
           />
           <Popconfirm
             title="Delete Student"

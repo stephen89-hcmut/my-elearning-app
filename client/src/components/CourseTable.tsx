@@ -1,16 +1,16 @@
 // src/components/CourseTable.tsx
 import React from 'react';
 import { Table, Card, Button, Space, Popconfirm, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { Course, CourseLevel } from '@/types';
 
 interface CourseTableProps {
   courses: Course[];
   loading?: boolean;
-  onEdit?: (courseId: number) => void;
-  onDelete?: (courseId: number) => void;
-  onView?: (courseId: number) => void;
+  onEdit?: (courseId: string | number) => void;
+  onDelete?: (courseId: string | number) => void;
+  onView?: (courseId: string | number) => void;
 }
 
 const CourseTable: React.FC<CourseTableProps> = ({
@@ -21,14 +21,6 @@ const CourseTable: React.FC<CourseTableProps> = ({
   onView,
 }) => {
   const navigate = useNavigate();
-
-  const handleRowNavigate = (courseId: number) => {
-    if (onView) {
-      onView(courseId);
-    } else {
-      navigate(`/courses/${courseId}`);
-    }
-  };
 
   const columns = [
     {
@@ -90,6 +82,20 @@ const CourseTable: React.FC<CourseTableProps> = ({
             }}
             title="Edit"
           />
+          <Button
+            type="text"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onView) {
+                onView(record.courseId);
+              } else {
+                navigate(`/courses/${record.courseId}`);
+              }
+            }}
+            title="View detail"
+          />
           <Popconfirm
             title="Delete Course"
             description="Are you sure you want to delete this course?"
@@ -125,10 +131,6 @@ const CourseTable: React.FC<CourseTableProps> = ({
         dataSource={courses}
         rowKey="courseId"
         loading={loading}
-        onRow={(record) => ({
-          onClick: () => handleRowNavigate(record.courseId),
-          style: { cursor: 'pointer' },
-        })}
         pagination={{
           total: courses.length,
           pageSize: 10,

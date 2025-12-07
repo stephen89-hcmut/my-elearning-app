@@ -112,6 +112,10 @@ const CoursesPage: React.FC = () => {
         loading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onView={(id) => {
+          // navigate directly to detail page
+          window.location.href = `/courses/${id}`;
+        }}
       />
 
       <CourseFormModal

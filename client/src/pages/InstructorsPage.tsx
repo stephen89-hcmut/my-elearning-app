@@ -13,9 +13,9 @@ import {
   Popconfirm,
   message,
 } from 'antd';
-import { SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
-import { getInstructors } from '@/api/courses';
+import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getInstructors, deleteInstructor } from '@/api/courses';
 import { InstructorEditModal } from '@/components';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,6 +24,7 @@ const InstructorsPage: React.FC = () => {
   const [editVisible, setEditVisible] = useState(false);
   const [selectedInstructor, setSelectedInstructor] = useState<any | null>(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Fetch instructors from API
   const {
@@ -46,6 +47,17 @@ const InstructorsPage: React.FC = () => {
     );
   });
 
+  const deleteInstructorMutation = useMutation({
+    mutationFn: (id: string) => deleteInstructor(id),
+    onSuccess: () => {
+      message.success('Instructor deleted');
+      queryClient.invalidateQueries({ queryKey: ['instructors'] });
+    },
+    onError: (error: any) => {
+      message.error(error?.message || 'Failed to delete instructor');
+    },
+  });
+
   const columns = [
     {
       title: 'No',
@@ -58,7 +70,7 @@ const InstructorsPage: React.FC = () => {
       dataIndex: 'instructorId',
       key: 'instructorId',
       width: 80,
-      render: (id: number) => `#${id}`,
+      render: (id: string) => id,
     },
     {
       title: 'Instructor Name',
@@ -114,12 +126,22 @@ const InstructorsPage: React.FC = () => {
             }}
             title="Edit"
           />
+          <Button
+            type="text"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/instructors/${record.instructorId}`);
+            }}
+            title="View"
+          />
           <Popconfirm
             title="Delete Instructor"
             description="Are you sure you want to delete this instructor?"
             okText="Yes"
             cancelText="No"
-            onConfirm={() => message.info(`Deleted instructor #${record.instructorId}`)}
+            onConfirm={() => deleteInstructorMutation.mutate(record.instructorId)}
           >
             <Button type="text" size="small" danger icon={<DeleteOutlined />} title="Delete" onClick={(e) => e.stopPropagation()} />
           </Popconfirm>
@@ -159,10 +181,6 @@ const InstructorsPage: React.FC = () => {
           <Table<any>
             columns={columns as any}
             dataSource={filteredInstructors.map((inst: any, idx: number) => ({ ...inst, key: inst.instructorId || idx }))}
-            onRow={(record) => ({
-              onClick: () => navigate(`/instructors/${record.instructorId}`),
-              style: { cursor: 'pointer' },
-            })}
             pagination={{ pageSize: 10 }}
           />
         </Spin>

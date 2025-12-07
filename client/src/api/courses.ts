@@ -88,7 +88,7 @@ export const updateCourse = async (
   }
 };
 
-export const deleteCourse = async (courseId: number): Promise<void> => {
+export const deleteCourse = async (courseId: number | string): Promise<void> => {
   try {
     await apiClient.delete(`/courses/${courseId}`);
   } catch (error) {
@@ -133,7 +133,7 @@ export const getStudentDetail = async (id: number): Promise<StudentDetail> => {
   }
 };
 
-export const deleteStudent = async (id: number): Promise<void> => {
+export const deleteStudent = async (id: string): Promise<void> => {
   try {
     await apiClient.delete(`/users/students/${id}`);
   } catch (error) {
@@ -168,7 +168,7 @@ export const getInstructorDetail = async (id: number): Promise<InstructorDetail>
   }
 };
 
-export const deleteInstructor = async (id: number): Promise<void> => {
+export const deleteInstructor = async (id: string): Promise<void> => {
   try {
     await apiClient.delete(`/users/instructors/${id}`);
   } catch (error) {

@@ -27,30 +27,31 @@ export class CoursesController {
 
   @Get()
   findAll(
-    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.coursesService.findAll(page, limit);
-  }
+    const pageNum = page !== undefined && page !== null && page !== '' ? Number(page) : undefined;
+    const limitNum = limit !== undefined && limit !== null && limit !== '' ? Number(limit) : undefined;
 
-  @Get('topics')
-  getTopics() {
-    return this.coursesService.getTopics();
+    return this.coursesService.findAll(
+      Number.isNaN(pageNum) ? undefined : pageNum,
+      Number.isNaN(limitNum) ? undefined : limitNum,
+    );
   }
 
   @Get(':id')
-  findById(@Param('id', ParseIntPipe) id: number) {
+  findById(@Param('id') id: string) {
     return this.coursesService.findById(id);
   }
 
   @Get(':id/detail')
-  findDetail(@Param('id', ParseIntPipe) id: number) {
+  findDetail(@Param('id') id: string) {
     return this.coursesService.getDetail(id);
   }
 
   @Get(':id/students')
   getStudentsByCourse(
-    @Param('id', ParseIntPipe) courseId: number,
+    @Param('id') courseId: string,
     @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
     @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
   ) {
@@ -59,7 +60,7 @@ export class CoursesController {
 
   @Put(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
     return this.coursesService.update(id, updateCourseDto);
@@ -67,7 +68,7 @@ export class CoursesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', ParseIntPipe) id: number) {
+  delete(@Param('id') id: string) {
     return this.coursesService.delete(id);
   }
 }

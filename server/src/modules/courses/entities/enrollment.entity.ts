@@ -6,11 +6,11 @@ import { LearningStatus } from '@/common/enums';
 
 @Entity('ENROLLMENTS')
 export class Enrollment {
-  @PrimaryColumn({ name: 'student_id' })
-  studentId: number;
+  @PrimaryColumn({ name: 'student_id', type: 'varchar' })
+  studentId: string;
 
-  @PrimaryColumn({ name: 'course_id' })
-  courseId: number;
+  @PrimaryColumn({ name: 'course_id', type: 'varchar', length: 20 })
+  courseId: string;
 
   @Column({ name: 'enrollment_date', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   enrollmentDate: Date;

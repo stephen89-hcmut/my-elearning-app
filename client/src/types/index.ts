@@ -127,7 +127,7 @@ export interface Lecture {
 }
 
 export interface Student {
-  studentId: number;
+  studentId: string;
   enrollmentDate: Date;
   status?: 'active' | 'inactive';
   user?: User;
@@ -160,7 +160,7 @@ export interface StudentDetail {
 }
 
 export interface Enrollment {
-  studentId: number;
+  studentId: string;
   courseId: number;
   enrollmentDate: Date;
   status: LearningStatus;
@@ -175,7 +175,6 @@ export interface CreateCourseDto {
   price: number;
   minScore?: number;
   level?: CourseLevel;
-  topicIds: number[];
 }
 
 export interface UpdateCourseDto {
@@ -185,7 +184,6 @@ export interface UpdateCourseDto {
   price?: number;
   minScore?: number;
   level?: CourseLevel;
-  topicIds?: number[];
 }
 
 export interface ApiResponse<T = any> {

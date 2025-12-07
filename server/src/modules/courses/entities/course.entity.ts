@@ -1,7 +1,7 @@
 // src/modules/courses/entities/course.entity.ts
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToMany,
   JoinTable,
@@ -15,8 +15,12 @@ import { CourseLevel } from '@/common/enums';
 
 @Entity('COURSES')
 export class Course {
-  @PrimaryGeneratedColumn({ name: 'course_id' })
-  courseId: number;
+  @PrimaryColumn({
+    name: 'course_id',
+    type: 'varchar',
+    length: 20,
+  })
+  courseId: string;
 
   @Column({ name: 'course_name', unique: true })
   courseName: string;

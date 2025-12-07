@@ -1,44 +1,62 @@
 // src/modules/courses/courses.service.ts
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository, DataSource } from 'typeorm';
-import { Course, Topic, Enrollment } from './entities';
+import { Repository, DataSource } from 'typeorm';
+import { Course, Enrollment } from './entities';
 import { CreateCourseDto, UpdateCourseDto } from './dto';
+import { QueryFailedError } from 'typeorm';
 
 @Injectable()
 export class CoursesService {
-
   constructor(
     @InjectRepository(Course)
     private coursesRepository: Repository<Course>,
-    @InjectRepository(Topic)
-    private topicsRepository: Repository<Topic>,
     @InjectRepository(Enrollment)
     private enrollmentRepository: Repository<Enrollment>,
     private dataSource: DataSource,
   ) {}
+
+  private async getNextCourseId(): Promise<string> {
+    const rows = await this.dataSource.query(
+      'SELECT IFNULL(MAX(CAST(course_id AS UNSIGNED)), 0) + 1 AS nextId FROM COURSES',
+    );
+    const nextId = Number(rows?.[0]?.nextId || 1);
+    const safe = Number.isNaN(nextId) ? 1 : nextId;
+    return String(safe);
+  }
   async create(createCourseDto: CreateCourseDto): Promise<Course> {
-    const { topicIds, ...courseData } = createCourseDto;
-
-    const topics = topicIds?.length
-      ? await this.topicsRepository.find({ where: { topicId: In(topicIds) } })
-      : [];
-
-    if (topicIds?.length && topics.length !== topicIds.length) {
-      throw new BadRequestException('One or more topicIds are invalid');
+    const duplicate = await this.coursesRepository.findOne({ where: { courseName: createCourseDto.courseName } });
+    if (duplicate) {
+      throw new BadRequestException('Course name already exists');
+    }
+    const courseId = await this.getNextCourseId();
+    const course = this.coursesRepository.create({ courseId, ...createCourseDto });
+    let saved: Course;
+    try {
+      saved = await this.coursesRepository.save(course);
+    } catch (err) {
+      if (err instanceof QueryFailedError && (err as any)?.code === 'ER_DUP_ENTRY') {
+        throw new BadRequestException('Course name already exists');
+      }
+      throw err;
     }
 
-    const course = this.coursesRepository.create({
-      ...courseData,
-      topics,
-    });
-
-    return this.coursesRepository.save(course);
+    return this.findById(saved.courseId);
   }
 
-  async findAll(page: number = 1, limit: number = 10): Promise<any> {
+  async findAll(page?: number, limit?: number): Promise<any> {
+    if (page === undefined || limit === undefined) {
+      const data = await this.coursesRepository.find({ order: { courseId: 'ASC' } });
+      return {
+        data,
+        total: data.length,
+        page: null,
+        limit: null,
+        totalPages: 1,
+      };
+    }
+
     const [data, total] = await this.coursesRepository.findAndCount({
-      relations: ['topics'],
       skip: (page - 1) * limit,
       take: limit,
       order: { courseId: 'ASC' },
@@ -53,10 +71,10 @@ export class CoursesService {
     };
   }
 
-  async findById(id: number): Promise<Course> {
+  async findById(id: string): Promise<Course> {
     const course = await this.coursesRepository.findOne({
       where: { courseId: id },
-      relations: ['topics', 'instructors', 'enrollments'],
+      relations: ['enrollments'],
     });
 
     if (!course) {
@@ -66,33 +84,19 @@ export class CoursesService {
     return course;
   }
 
-  async update(id: number, updateCourseDto: UpdateCourseDto): Promise<Course> {
+  async update(id: string, updateCourseDto: UpdateCourseDto): Promise<Course> {
     const course = await this.findById(id);
-    const { topicIds, ...updateData } = updateCourseDto;
-
-    if (topicIds) {
-      const topics = await this.topicsRepository.find({ where: { topicId: In(topicIds) } });
-      if (topics.length !== topicIds.length) {
-        throw new BadRequestException('One or more topicIds are invalid');
-      }
-      course.topics = topics;
-    }
-
-    Object.assign(course, updateData);
+    Object.assign(course, updateCourseDto);
     return this.coursesRepository.save(course);
   }
 
-  async delete(id: number): Promise<void> {
-    const course = await this.findById(id);
-    await this.coursesRepository.remove(course);
-  }
-
-  async getTopics(): Promise<Topic[]> {
-    return this.topicsRepository.find({ order: { topicId: 'ASC' } });
+  async delete(id: string): Promise<void> {
+    // Use stored procedure to handle dependent cleanup safely
+    await this.dataSource.query('CALL sp_DeleteCourse(?)', [id]);
   }
 
   async getStudentsByCourse(
-    courseId: number,
+    courseId: string,
     page: number = 1,
     limit: number = 10,
   ): Promise<any> {
@@ -124,7 +128,7 @@ export class CoursesService {
     };
   }
 
-  async getDetail(id: number) {
+  async getDetail(id: string) {
     const [row] = await this.dataSource.query(
       `SELECT c.course_id as courseId,
               c.course_name as courseName,
@@ -152,35 +156,10 @@ export class CoursesService {
       throw new NotFoundException(`Course with ID ${id} not found`);
     }
 
-    const topics = await this.dataSource.query(
-      `SELECT t.topic_id as topicId, t.topic_name as topicName
-       FROM COURSE_TOPICS ct
-       JOIN TOPICS t ON t.topic_id = ct.topic_id
-       WHERE ct.course_id = ?
-       ORDER BY t.topic_name`,
-      [id],
-    );
-
-    const instructor = (await this.dataSource.query(
-      `SELECT i.instructor_id as instructorId,
-              u.first_name as firstName,
-              u.last_name as lastName,
-              u.username,
-              u.email,
-              i.teaching_field as teachingField
-       FROM COURSE_INSTRUCTORS ci
-       JOIN INSTRUCTORS i ON i.instructor_id = ci.instructor_id
-       JOIN USERS u ON u.user_id = i.instructor_id
-       WHERE ci.course_id = ?
-       ORDER BY ci.is_main_instructor DESC
-       LIMIT 1`,
-      [id],
-    ))?.[0];
-
     return {
       ...row,
-      topics,
-      instructor,
+      topics: [],
+      instructor: null,
     };
   }
 }
