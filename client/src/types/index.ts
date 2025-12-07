@@ -181,6 +181,17 @@ export interface UpdateStudentDto {
   paymentAccount?: string;
 }
 
+export interface UpdateInstructorDto {
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  bankName?: string;
+  paymentAccount?: string;
+  teachingField?: string;
+  bio?: string;
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;

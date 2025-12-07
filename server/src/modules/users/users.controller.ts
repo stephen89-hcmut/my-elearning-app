@@ -5,10 +5,13 @@ import {
   Query,
   Param,
   Delete,
+  Put,
+  Body,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { UpdateStudentDto, UpdateInstructorDto } from './dto';
 
 @Controller('users')
 export class UsersController {
@@ -39,9 +42,19 @@ export class UsersController {
     return this.usersService.getStudentDetail(id);
   }
 
+  @Put('students/:id')
+  updateStudent(@Param('id') id: string, @Body() body: UpdateStudentDto) {
+    return this.usersService.updateStudent(id, body);
+  }
+
   @Get('instructors/:id')
   getInstructorDetail(@Param('id') id: string) {
     return this.usersService.getInstructorDetail(id);
+  }
+
+  @Put('instructors/:id')
+  updateInstructor(@Param('id') id: string, @Body() body: UpdateInstructorDto) {
+    return this.usersService.updateInstructor(id, body);
   }
 
   @Delete('students/:id')

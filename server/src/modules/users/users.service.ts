@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User, Student, Instructor, Admin } from './entities';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, UpdateStudentDto, UpdateInstructorDto } from './dto';
 import { UserRole } from '@/common/enums';
 
 @Injectable()
@@ -205,6 +205,73 @@ export class UsersService implements OnModuleInit {
     }
 
     return row;
+  }
+
+  async updateStudent(id: string, payload: UpdateStudentDto) {
+    const student = await this.studentsRepository.findOne({ where: { studentId: id }, relations: ['user'] });
+
+    if (!student || !student.user) {
+      throw new NotFoundException(`Student with ID ${id} not found`);
+    }
+
+    // Uniqueness checks for username/email when provided
+    if (payload.username) {
+      const existing = await this.usersRepository.findOne({ where: { username: payload.username } });
+      if (existing && existing.userId !== student.user.userId) {
+        throw new BadRequestException('Username already exists');
+      }
+    }
+
+    if (payload.email) {
+      const existing = await this.usersRepository.findOne({ where: { email: payload.email } });
+      if (existing && existing.userId !== student.user.userId) {
+        throw new BadRequestException('Email already exists');
+      }
+    }
+
+    Object.assign(student.user, payload);
+    await this.usersRepository.save(student.user);
+
+    // Return updated summary using stored procedure for consistency
+    return this.getStudentDetail(id);
+  }
+
+  async updateInstructor(id: string, payload: UpdateInstructorDto) {
+    const instructor = await this.instructorsRepository.findOne({ where: { instructorId: id as any }, relations: ['user'] });
+
+    if (!instructor || !instructor.user) {
+      throw new NotFoundException(`Instructor with ID ${id} not found`);
+    }
+
+    if (payload.username) {
+      const existing = await this.usersRepository.findOne({ where: { username: payload.username } });
+      if (existing && existing.userId !== instructor.user.userId) {
+        throw new BadRequestException('Username already exists');
+      }
+    }
+
+    if (payload.email) {
+      const existing = await this.usersRepository.findOne({ where: { email: payload.email } });
+      if (existing && existing.userId !== instructor.user.userId) {
+        throw new BadRequestException('Email already exists');
+      }
+    }
+
+    Object.assign(instructor.user, payload);
+    await this.usersRepository.save(instructor.user);
+
+    if (payload.teachingField !== undefined) {
+      instructor.teachingField = payload.teachingField;
+    }
+
+    if (payload.bio !== undefined) {
+      (instructor as any).bio = payload.bio;
+    }
+
+    await this.instructorsRepository.save(instructor);
+
+    // Return stored-procedure detail for consistency
+    return this.getInstructorDetail(id);
   }
 
   async deleteStudent(id: string): Promise<void> {

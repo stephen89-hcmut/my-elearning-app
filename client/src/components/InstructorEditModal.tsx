@@ -17,10 +17,9 @@ export interface InstructorEditFormValues {
   email: string;
   firstName: string;
   lastName: string;
-  phone?: string;
   bankName?: string;
   paymentAccount?: string;
-  specialty?: string;
+  teaching_field?: string;
   bio?: string;
 }
 
@@ -38,10 +37,9 @@ const InstructorEditModal: React.FC<InstructorEditModalProps> = ({ open, instruc
     email: '',
     firstName: '',
     lastName: '',
-    phone: '',
     bankName: '',
     paymentAccount: '',
-    specialty: '',
+    teaching_field: '',
     bio: '',
   });
 
@@ -52,11 +50,10 @@ const InstructorEditModal: React.FC<InstructorEditModalProps> = ({ open, instruc
         email: instructor?.user?.email || '',
         firstName: instructor?.user?.firstName || '',
         lastName: instructor?.user?.lastName || '',
-        phone: instructor?.phone || '',
         bankName: instructor?.user?.bankName || '',
         paymentAccount: instructor?.user?.paymentAccount || '',
-        specialty: instructor?.specialty || '',
-        bio: instructor?.bio || '',
+        teaching_field: (instructor as any)?.teachingField || '',
+        bio: (instructor as any)?.bio || '',
       });
     }
   }, [open, instructor]);
@@ -136,18 +133,9 @@ const InstructorEditModal: React.FC<InstructorEditModalProps> = ({ open, instruc
           </Grid>
           <Grid item xs={12} md={6}>
             <TextField
-              label="Phone"
-              value={formValues.phone}
-              onChange={handleChange('phone')}
-              fullWidth
-              placeholder="0123xxxxxx"
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Specialty"
-              value={formValues.specialty}
-              onChange={handleChange('specialty')}
+              label="Teaching Field"
+              value={formValues.teaching_field}
+              onChange={handleChange('teaching_field')}
               fullWidth
               placeholder="Mathematics, Physics, ..."
             />

@@ -15,7 +15,8 @@ import {
 } from 'antd';
 import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getInstructors, deleteInstructor } from '@/api/courses';
+import { getInstructors, deleteInstructor, updateInstructor } from '@/api/courses';
+import { UpdateInstructorDto } from '@/types';
 import { InstructorEditModal } from '@/components';
 import { useNavigate } from 'react-router-dom';
 
@@ -55,6 +56,20 @@ const InstructorsPage: React.FC = () => {
     },
     onError: (error: any) => {
       message.error(error?.message || 'Failed to delete instructor');
+    },
+  });
+
+  const updateInstructorMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateInstructorDto }) => updateInstructor(id, data),
+    onSuccess: () => {
+      message.success('Instructor updated');
+      queryClient.invalidateQueries({ queryKey: ['instructors'] });
+      setEditVisible(false);
+      setSelectedInstructor(null);
+    },
+    onError: (error: any) => {
+      const serverMsg = error?.response?.data?.message || error?.message;
+      message.error(serverMsg || 'Failed to update instructor');
     },
   });
 
@@ -189,15 +204,24 @@ const InstructorsPage: React.FC = () => {
       <InstructorEditModal
         open={editVisible}
         instructor={selectedInstructor || undefined}
+        loading={updateInstructorMutation.isPending}
         onCancel={() => {
           setEditVisible(false);
           setSelectedInstructor(null);
         }}
         onSubmit={(values) => {
-          // TODO: wire up to backend update endpoint when available
-          message.success('Instructor updated (UI only)');
-          setEditVisible(false);
-          setSelectedInstructor(null);
+          if (!selectedInstructor) return;
+          const payload: UpdateInstructorDto = {
+            username: values.username,
+            email: values.email,
+            firstName: values.firstName,
+            lastName: values.lastName,
+            bankName: values.bankName,
+            paymentAccount: values.paymentAccount,
+            teachingField: values.teaching_field,
+            bio: values.bio,
+          };
+          updateInstructorMutation.mutate({ id: selectedInstructor.instructorId, data: payload });
         }}
       />
     </div>

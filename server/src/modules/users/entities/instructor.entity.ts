@@ -19,6 +19,9 @@ export class Instructor {
   @Column('text', { name: 'teaching_field', nullable: true })
   teachingField: string;
 
+  @Column('text', { name: 'bio', nullable: true })
+  bio: string;
+
   @OneToOne(() => User, (user) => user.instructor, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'instructor_id' })
   user: User;

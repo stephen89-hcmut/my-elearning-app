@@ -1,6 +1,6 @@
 // src/api/courses.ts
 import axios from 'axios';
-import { Course, CourseDetail, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic, Student, Instructor, DashboardStats, MonthlyRevenue, StudentDetail, InstructorDetail, UpdateStudentDto } from '@/types';
+import { Course, CourseDetail, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic, Student, Instructor, DashboardStats, MonthlyRevenue, StudentDetail, InstructorDetail, UpdateStudentDto, UpdateInstructorDto } from '@/types';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -174,6 +174,16 @@ export const getInstructorDetail = async (id: string): Promise<InstructorDetail>
     return response.data;
   } catch (error) {
     console.error('Error fetching instructor detail:', error);
+    throw error;
+  }
+};
+
+export const updateInstructor = async (id: string, data: UpdateInstructorDto): Promise<InstructorDetail> => {
+  try {
+    const response = await apiClient.put(`/users/instructors/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating instructor:', error);
     throw error;
   }
 };
