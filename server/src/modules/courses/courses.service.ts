@@ -218,14 +218,53 @@ export class CoursesService {
   }
 
   async getDetail(id: string) {
-    const result = await this.dataSource.query('CALL sp_GetCourseDetails(?)', [id]);
-    const row = Array.isArray(result?.[0]) && result[0].length ? result[0][0] : null;
+    const course = await this.coursesRepository.findOne({
+      where: { courseId: id },
+      relations: ['topics', 'instructors', 'instructors.instructor', 'instructors.instructor.user'],
+    });
 
-    if (!row) {
+    if (!course) {
       throw new NotFoundException(`Course with ID ${id} not found`);
     }
 
-    return row;
+    const enrollmentRows = await this.dataSource.query(
+      'SELECT COUNT(*) AS totalStudents FROM ENROLLMENTS WHERE course_id = ?',
+      [id],
+    );
+    const totalStudents = Number(enrollmentRows?.[0]?.totalStudents || 0);
+
+    const revenueRows = await this.dataSource.query(
+      "SELECT COALESCE(SUM(price), 0) AS totalRevenue FROM TRANSACTIONS WHERE course_id = ? AND payment_status = 'completed'",
+      [id],
+    );
+    const totalRevenue = Number(revenueRows?.[0]?.totalRevenue || 0);
+
+    // Reviews/rating not modeled yet; return neutral defaults
+    const totalReviews = 0;
+    const avgRating = 0;
+
+    return {
+      courseId: course.courseId,
+      courseName: course.courseName,
+      language: course.language,
+      description: course.description,
+      minScore: course.minScore,
+      price: Number(course.price || 0),
+      level: course.level,
+      topics: (course.topics || []).map((t) => ({ topicId: t.topicId, topicName: t.topicName })),
+      instructors: (course.instructors || []).map((ci) => {
+        const fullName = `${ci.instructor?.user?.firstName || ''} ${ci.instructor?.user?.lastName || ''}`.trim();
+        return {
+          instructorId: ci.instructorId,
+          name: fullName || ci.instructorId,
+        };
+      }),
+      totalRevenue,
+      totalReviews,
+      avgRating,
+      totalStudents,
+      totalEnrollments: totalStudents,
+    };
   }
 
   async getTopics(): Promise<Topic[]> {

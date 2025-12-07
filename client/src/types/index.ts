@@ -101,15 +101,20 @@ export interface Course {
 }
 
 export interface CourseDetail {
-  course_name: string;
+  courseId: string;
+  courseName: string;
   language: string;
-  min_score: number;
   description: string | null;
-  topics: string | null;
-  total_students: number;
-  total_revenue: number;
-  total_reviews: number;
-  avg_rating: number;
+  minScore: number;
+  price: number;
+  level: CourseLevel;
+  topics: { topicId: string; topicName: string }[];
+  instructors: { instructorId: string; name: string }[];
+  totalStudents: number;
+  totalEnrollments: number;
+  totalRevenue: number;
+  totalReviews: number;
+  avgRating: number;
 }
 
 export interface Section {
