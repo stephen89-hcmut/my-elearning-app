@@ -184,60 +184,15 @@ export class UsersService implements OnModuleInit {
   }
 
   async getStudentDetail(id: string) {
-    const student = await this.studentsRepository.findOne({
-      where: { studentId: id },
-      relations: ['user'],
-    });
+    // Use stored procedure to fetch student detail summary
+    const result = await this.dataSource.query('CALL sp_GetStudentDetails(?)', [id]);
+    const row = Array.isArray(result?.[0]) && result[0].length ? result[0][0] : null;
 
-    if (!student) {
+    if (!row) {
       throw new NotFoundException(`Student with ID ${id} not found`);
     }
 
-    const stats = await this.dataSource.query(
-      `SELECT
-        COUNT(*) as totalCourses,
-        SUM(CASE WHEN completion_status = 2 THEN 1 ELSE 0 END) as completedCourses,
-        SUM(CASE WHEN completion_status = 1 THEN 1 ELSE 0 END) as inProgressCourses
-      FROM ENROLLMENTS
-      WHERE student_id = ?`,
-      [id],
-    );
-
-    const spendingRow = (await this.dataSource.query(
-      `SELECT COALESCE(SUM(price), 0) as totalSpent
-       FROM TRANSACTIONS
-       WHERE student_id = ? AND payment_status = 'completed'`,
-      [id],
-    ))[0];
-
-    const courses = await this.dataSource.query(
-      `SELECT c.course_id as courseId,
-              c.course_name as courseName,
-              c.description,
-              c.language,
-              c.level,
-              c.total_lectures as totalLectures,
-              c.price,
-              e.completion_status as completionStatus,
-              e.enrollment_date as enrollmentDate
-       FROM ENROLLMENTS e
-       JOIN COURSES c ON c.course_id = e.course_id
-       WHERE e.student_id = ?
-       ORDER BY e.enrollment_date DESC`,
-      [id],
-    );
-
-    return {
-      student,
-      stats: {
-        totalCourses: Number(stats?.[0]?.totalCourses || 0),
-        completed: Number(stats?.[0]?.completedCourses || 0),
-        inProgress: Number(stats?.[0]?.inProgressCourses || 0),
-        totalSpent: Number(spendingRow?.totalSpent || 0),
-        avgScore: null,
-      },
-      courses,
-    };
+    return row;
   }
 
   async getInstructorDetail(id: string) {

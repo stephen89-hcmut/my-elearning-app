@@ -123,7 +123,7 @@ export const getStudents = async (
   }
 };
 
-export const getStudentDetail = async (id: number): Promise<StudentDetail> => {
+export const getStudentDetail = async (id: string): Promise<StudentDetail> => {
   try {
     const response = await apiClient.get(`/users/students/${id}`);
     return response.data;

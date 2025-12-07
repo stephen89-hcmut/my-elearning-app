@@ -14,22 +14,16 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { ArrowLeftOutlined, MailOutlined, CalendarOutlined, CreditCardOutlined, PhoneOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, MailOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getStudentDetail } from '@/api/courses';
-import { StudentDetail, CourseLevel } from '@/types';
-
-const levelLabel: Record<number, string> = {
-  [CourseLevel.BEGINNER]: 'Beginner',
-  [CourseLevel.INTERMEDIATE]: 'Intermediate',
-  [CourseLevel.ADVANCED]: 'Advanced',
-};
+import { StudentDetail } from '@/types';
 
 const StudentDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const studentId = Number(id);
+  const studentId = id as string;
 
   const {
     data,
@@ -39,12 +33,16 @@ const StudentDetailPage: React.FC = () => {
   } = useQuery<StudentDetail>({
     queryKey: ['student-detail', studentId],
     queryFn: () => getStudentDetail(studentId),
-    enabled: !Number.isNaN(studentId),
+    enabled: Boolean(studentId),
   });
 
-  const user = data?.student.user;
-  const initials = `${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}` || 'NA';
-  const statusLabel = data?.student.status || 'Active';
+  const initials = (data?.student_name || 'NA')
+    .split(' ')
+    .map((p) => p.charAt(0))
+    .join('')
+    .slice(0, 2) || 'NA';
+  const statusLabel = 'Active';
+  const enrollmentDate = data?.enrollment_date ? new Date(data.enrollment_date).toLocaleDateString('vi-VN') : 'Joined —';
 
   return (
     <div style={{ padding: 24 }}>
@@ -72,30 +70,18 @@ const StudentDetailPage: React.FC = () => {
                 </Avatar>
                 <div>
                   <Typography.Title level={3} style={{ margin: 0 }}>
-                    {user ? `${user.firstName} ${user.lastName}` : 'Student Name'}
+                    {data?.student_name || 'Student Name'}
                   </Typography.Title>
-                  <Typography.Text type="secondary" style={{ display: 'block' }}>@{user?.username || 'username'}</Typography.Text>
+                  <Typography.Text type="secondary" style={{ display: 'block' }}>@{data?.username || 'username'}</Typography.Text>
                   <Space size={12} wrap>
                     <Space size={6}>
                       <MailOutlined />
-                      <Typography.Text>{user?.email || '—'}</Typography.Text>
+                      <Typography.Text>{data?.email || '—'}</Typography.Text>
                     </Space>
                     <Space size={6}>
                       <CalendarOutlined />
-                      <Typography.Text>{data?.student.enrollmentDate ? new Date(data.student.enrollmentDate).toLocaleDateString('vi-VN') : 'Joined —'}</Typography.Text>
+                      <Typography.Text>{enrollmentDate}</Typography.Text>
                     </Space>
-                    {user?.paymentAccount && (
-                      <Space size={6}>
-                        <CreditCardOutlined />
-                        <Typography.Text>{user.paymentAccount}</Typography.Text>
-                      </Space>
-                    )}
-                    {user?.bankName && (
-                      <Space size={6}>
-                        <PhoneOutlined />
-                        <Typography.Text>{user.bankName}</Typography.Text>
-                      </Space>
-                    )}
                   </Space>
                 </div>
               </Space>
@@ -109,22 +95,22 @@ const StudentDetailPage: React.FC = () => {
         <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
           <Col xs={12} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Total Courses" value={data?.stats.totalCourses ?? 0} />
+              <Statistic title="Total Courses" value={data?.total_courses ?? 0} />
             </Card>
           </Col>
           <Col xs={12} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Completed" value={data?.stats.completed ?? 0} />
+              <Statistic title="Completed" value={data?.total_completed ?? 0} />
             </Card>
           </Col>
           <Col xs={12} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Avg Progress" value={data?.stats.avgScore ?? 0} suffix="%" />
+              <Statistic title="Certificates" value={data?.total_certificates ?? 0} />
             </Card>
           </Col>
           <Col xs={12} md={6}>
             <Card bodyStyle={{ padding: 16 }}>
-              <Statistic title="Study Hours" value={data?.stats.totalSpent ?? 0} suffix="h" />
+              <Statistic title="Study Duration" value={data?.total_learning_duration ?? 0} />
             </Card>
           </Col>
         </Row>
@@ -152,26 +138,10 @@ const StudentDetailPage: React.FC = () => {
             },
             {
               key: 'courses',
-              label: `Courses (${data?.courses.length ?? 0})`,
+              label: `Courses (${data?.total_courses ?? 0})`,
               children: (
                 <Card bordered={false} style={{ borderRadius: 12 }}>
-                  {data?.courses?.length ? (
-                    <Row gutter={[12, 12]}>
-                      {data.courses.map((course) => (
-                        <Col key={course.courseId} xs={24} md={12}>
-                          <Card size="small" hoverable style={{ borderRadius: 10 }} onClick={() => navigate(`/courses/${course.courseId}`)}>
-                            <Space direction="vertical" size={4}>
-                              <Typography.Text strong>{course.courseName}</Typography.Text>
-                              <Typography.Text type="secondary">{course.language} • {levelLabel[course.level] || '—'}</Typography.Text>
-                              <Typography.Text type="secondary">Enrolled: {new Date(course.enrollmentDate).toLocaleDateString('vi-VN')}</Typography.Text>
-                            </Space>
-                          </Card>
-                        </Col>
-                      ))}
-                    </Row>
-                  ) : (
-                    <Empty description="No courses yet" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                  )}
+                  <Empty description="No courses yet" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 </Card>
               ),
             },
@@ -182,7 +152,7 @@ const StudentDetailPage: React.FC = () => {
             },
             {
               key: 'certificates',
-              label: `Certificates (${data?.courses.filter((c) => c.completionStatus === 2).length ?? 0})`,
+              label: `Certificates (${data?.total_certificates ?? 0})`,
               children: <Empty description="Certificates will appear here" image={Empty.PRESENTED_IMAGE_SIMPLE} />, 
             },
           ]}

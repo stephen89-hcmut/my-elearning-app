@@ -133,30 +133,15 @@ export interface Student {
   user?: User;
 }
 
-export interface StudentStats {
-  totalCourses: number;
-  completed: number;
-  inProgress: number;
-  totalSpent: number;
-  avgScore: number | null;
-}
-
-export interface StudentCourseSummary {
-  courseId: number;
-  courseName: string;
-  description?: string;
-  language: string;
-  level: CourseLevel;
-  totalLectures: number;
-  price: number;
-  completionStatus: LearningStatus;
-  enrollmentDate: string;
-}
-
 export interface StudentDetail {
-  student: Student;
-  stats: StudentStats;
-  courses: StudentCourseSummary[];
+  student_name: string;
+  username: string;
+  email: string;
+  enrollment_date: string;
+  total_courses: number;
+  total_certificates: number;
+  total_completed: number;
+  total_learning_duration: number;
 }
 
 export interface Enrollment {
