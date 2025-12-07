@@ -16,20 +16,21 @@ From the repo root (contains `docker-compose.yml`):
 cd /path/to/my-elearning-app
 docker compose up -d
 ```
-- Service: `elearning-mysql` (MySQL 8.0), exposes `3306` with credentials in compose (rootpass/appuser/apppass, DB `my_elearing_db`).
+- Service: `elearning-mysql` (MySQL 8.0), exposes `3306` with credentials in compose (root/rootpass, app user `sManager`/`admin@123`, DB `BTL2`).
 - Check status: `docker ps` and `docker logs elearning-mysql` if needed.
 
 ## 3) Configure environment variables
 Create `.env` files as below.
 
 ### Backend (`server/.env`)
+Copy `server/.env.example` to `server/.env` and adjust if needed:
 ```
 PORT=3001
 DB_HOST=localhost
 DB_PORT=3306
-DB_USERNAME=appuser
-DB_PASSWORD=apppass
-DB_NAME=my_elearing_db
+DB_USERNAME=sManager
+DB_PASSWORD=admin@123
+DB_NAME=BTL2
 JWT_SECRET=your_jwt_secret
 JWT_EXPIRES_IN=7d
 TYPEORM_LOGGING=false
@@ -44,14 +45,15 @@ Point this to the backend host/port you run.
 
 ## 4) Initialize database schema/data
 We keep the full SQL in `Doc/DB_INIT_SCRIPT.md`, and it's already copied to repo root as `db_init.sql`.
-- Quick run (PowerShell): `pwsh scripts/run-db-init.ps1` (optional params: `-Host 127.0.0.1 -Port 3306 -User appuser -Password apppass -File ../db_init.sql`).
-- Quick run (bash): `HOST=127.0.0.1 PORT=3306 USER=appuser PASSWORD=apppass FILE=../db_init.sql ./scripts/run-db-init.sh`.
+- Quick run (PowerShell): `pwsh scripts/run-db-init.ps1` (defaults: root/rootpass, file `../db_init.sql`).
+- Quick run (bash): `./scripts/run-db-init.sh` (same defaults; can override `HOST/PORT/USER/PASSWORD/FILE`).
+- Both scripts auto-fallback to `docker exec elearning-mysql mysql ...` if local `mysql` client is missing.
 - Manual MySQL CLI (if you prefer):
 ```pwsh
-# Windows/macOS terminal
-mysql -h 127.0.0.1 -P 3306 -uappuser -papppass < db_init.sql
+# Windows/macOS terminal (requires mysql client on PATH)
+mysql -h 127.0.0.1 -P 3306 -uroot -prootpass < db_init.sql
 ```
-- The script creates DB `BTL2`, all tables, triggers, functions/procedures, and seeds sample data. Requires `mysql` client on PATH.
+- The script creates DB `BTL2`, all tables, triggers, functions/procedures, and seeds sample data.
 
 ## 5) Run backend and frontend
 Install dependencies once per workspace:
