@@ -16,9 +16,12 @@ import {
 import { SearchOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { getInstructors } from '@/api/courses';
+import { InstructorDetailModal } from '@/components';
 
 const InstructorsPage: React.FC = () => {
   const [searchText, setSearchText] = useState('');
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [selectedInstructorId, setSelectedInstructorId] = useState<number | undefined>(undefined);
 
   // Fetch instructors from API
   const {
@@ -98,6 +101,7 @@ const InstructorsPage: React.FC = () => {
       width: 140,
       render: (_: any, record: any) => (
         <Space size="small">
+          <Button size="small" onClick={() => { setSelectedInstructorId(record.instructorId); setDetailVisible(true); }}>View</Button>
           <Button size="small" onClick={() => message.info(`Edit instructor #${record.instructorId}`)}>Edit</Button>
           <Popconfirm
             title="Delete Instructor"
@@ -145,10 +149,25 @@ const InstructorsPage: React.FC = () => {
           <Table<any>
             columns={columns as any}
             dataSource={filteredInstructors.map((inst: any, idx: number) => ({ ...inst, key: inst.instructorId || idx }))}
+            onRow={(record) => ({
+              onClick: () => {
+                setSelectedInstructorId(record.instructorId);
+                setDetailVisible(true);
+              },
+            })}
             pagination={{ pageSize: 10 }}
           />
         </Spin>
       </Card>
+
+      <InstructorDetailModal
+        visible={detailVisible}
+        instructorId={selectedInstructorId}
+        onClose={() => {
+          setDetailVisible(false);
+          setSelectedInstructorId(undefined);
+        }}
+      />
     </div>
   );
 };

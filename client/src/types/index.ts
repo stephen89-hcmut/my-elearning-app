@@ -44,6 +44,41 @@ export interface Instructor {
   user?: User;
 }
 
+export interface InstructorStats {
+  courseCount: number;
+  studentCount: number;
+  revenue: number;
+  avgRating: number | null;
+}
+
+export interface InstructorCourseSummary {
+  courseId: number;
+  courseName: string;
+  language: string;
+  level: CourseLevel;
+  lectures: number;
+  price: number;
+  studentCount: number;
+}
+
+export interface InstructorRevenueByCourse {
+  courseName: string;
+  revenue: number;
+}
+
+export interface InstructorCoursesByLevel {
+  level: CourseLevel;
+  count: number;
+}
+
+export interface InstructorDetail {
+  instructor: Instructor;
+  stats: InstructorStats;
+  revenueByCourse: InstructorRevenueByCourse[];
+  coursesByLevel: InstructorCoursesByLevel[];
+  courses: InstructorCourseSummary[];
+}
+
 export interface Course {
   courseId: number;
   courseName: string;
@@ -58,6 +93,21 @@ export interface Course {
   instructors?: Instructor[];
   rating?: number;
   studentCount?: number;
+}
+
+export interface CourseDetail extends Course {
+  lectureCount: number;
+  testCount: number;
+  totalDuration: number;
+  topics: Topic[];
+  instructor?: {
+    instructorId: number;
+    firstName: string;
+    lastName: string;
+    username: string;
+    email: string;
+    teachingField?: string;
+  };
 }
 
 export interface Section {
@@ -80,6 +130,32 @@ export interface Student {
   enrollmentDate: Date;
   status?: 'active' | 'inactive';
   user?: User;
+}
+
+export interface StudentStats {
+  totalCourses: number;
+  completed: number;
+  inProgress: number;
+  totalSpent: number;
+  avgScore: number | null;
+}
+
+export interface StudentCourseSummary {
+  courseId: number;
+  courseName: string;
+  description?: string;
+  language: string;
+  level: CourseLevel;
+  totalLectures: number;
+  price: number;
+  completionStatus: LearningStatus;
+  enrollmentDate: string;
+}
+
+export interface StudentDetail {
+  student: Student;
+  stats: StudentStats;
+  courses: StudentCourseSummary[];
 }
 
 export interface Enrollment {

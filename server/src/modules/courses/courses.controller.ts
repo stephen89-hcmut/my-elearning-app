@@ -43,6 +43,11 @@ export class CoursesController {
     return this.coursesService.findById(id);
   }
 
+  @Get(':id/detail')
+  findDetail(@Param('id', ParseIntPipe) id: number) {
+    return this.coursesService.getDetail(id);
+  }
+
   @Get(':id/students')
   getStudentsByCourse(
     @Param('id', ParseIntPipe) courseId: number,

@@ -1,7 +1,7 @@
 // src/modules/users/users.service.ts
 import { Injectable, BadRequestException, NotFoundException, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User, Student, Instructor, Admin } from './entities';
 import { CreateUserDto } from './dto';
@@ -18,6 +18,7 @@ export class UsersService implements OnModuleInit {
     private instructorsRepository: Repository<Instructor>,
     @InjectRepository(Admin)
     private adminsRepository: Repository<Admin>,
+    private dataSource: DataSource,
   ) {}
 
   async onModuleInit() {
@@ -179,6 +180,142 @@ export class UsersService implements OnModuleInit {
       page: safePage,
       limit: safeLimit,
       totalPages: Math.ceil(total / safeLimit),
+    };
+  }
+
+  async getStudentDetail(id: number) {
+    const student = await this.studentsRepository.findOne({
+      where: { studentId: id },
+      relations: ['user'],
+    });
+
+    if (!student) {
+      throw new NotFoundException(`Student with ID ${id} not found`);
+    }
+
+    const stats = await this.dataSource.query(
+      `SELECT
+        COUNT(*) as totalCourses,
+        SUM(CASE WHEN completion_status = 2 THEN 1 ELSE 0 END) as completedCourses,
+        SUM(CASE WHEN completion_status = 1 THEN 1 ELSE 0 END) as inProgressCourses
+      FROM ENROLLMENTS
+      WHERE student_id = ?`,
+      [id],
+    );
+
+    const spendingRow = (await this.dataSource.query(
+      `SELECT COALESCE(SUM(price), 0) as totalSpent
+       FROM TRANSACTIONS
+       WHERE student_id = ? AND payment_status = 'completed'`,
+      [id],
+    ))[0];
+
+    const courses = await this.dataSource.query(
+      `SELECT c.course_id as courseId,
+              c.course_name as courseName,
+              c.description,
+              c.language,
+              c.level,
+              c.total_lectures as totalLectures,
+              c.price,
+              e.completion_status as completionStatus,
+              e.enrollment_date as enrollmentDate
+       FROM ENROLLMENTS e
+       JOIN COURSES c ON c.course_id = e.course_id
+       WHERE e.student_id = ?
+       ORDER BY e.enrollment_date DESC`,
+      [id],
+    );
+
+    return {
+      student,
+      stats: {
+        totalCourses: Number(stats?.[0]?.totalCourses || 0),
+        completed: Number(stats?.[0]?.completedCourses || 0),
+        inProgress: Number(stats?.[0]?.inProgressCourses || 0),
+        totalSpent: Number(spendingRow?.totalSpent || 0),
+        avgScore: null,
+      },
+      courses,
+    };
+  }
+
+  async getInstructorDetail(id: number) {
+    const instructor = await this.instructorsRepository.findOne({
+      where: { instructorId: id },
+      relations: ['user'],
+    });
+
+    if (!instructor) {
+      throw new NotFoundException(`Instructor with ID ${id} not found`);
+    }
+
+    const [statsRow] = await this.dataSource.query(
+      `SELECT
+        COUNT(DISTINCT ci.course_id) as courseCount,
+        COUNT(DISTINCT e.student_id) as studentCount,
+        COALESCE(SUM(CASE WHEN t.payment_status = 'completed' THEN t.price END), 0) as revenue
+      FROM INSTRUCTORS i
+      LEFT JOIN COURSE_INSTRUCTORS ci ON ci.instructor_id = i.instructor_id
+      LEFT JOIN ENROLLMENTS e ON e.course_id = ci.course_id
+      LEFT JOIN TRANSACTIONS t ON t.course_id = ci.course_id AND t.instructor_id = i.instructor_id
+      WHERE i.instructor_id = ?
+      GROUP BY i.instructor_id`,
+      [id],
+    );
+
+    const revenueByCourse = await this.dataSource.query(
+      `SELECT c.course_name as courseName,
+              COALESCE(SUM(CASE WHEN t.payment_status = 'completed' THEN t.price END), 0) as revenue
+       FROM COURSE_INSTRUCTORS ci
+       JOIN COURSES c ON c.course_id = ci.course_id
+       LEFT JOIN TRANSACTIONS t ON t.course_id = ci.course_id AND t.instructor_id = ci.instructor_id AND t.payment_status = 'completed'
+       WHERE ci.instructor_id = ?
+       GROUP BY c.course_id, c.course_name
+       ORDER BY c.course_name`,
+      [id],
+    );
+
+    const coursesByLevel = await this.dataSource.query(
+      `SELECT c.level, COUNT(*) as count
+       FROM COURSE_INSTRUCTORS ci
+       JOIN COURSES c ON c.course_id = ci.course_id
+       WHERE ci.instructor_id = ?
+       GROUP BY c.level`,
+      [id],
+    );
+
+    const courses = await this.dataSource.query(
+      `SELECT c.course_id as courseId,
+              c.course_name as courseName,
+              c.language,
+              c.level,
+              c.total_lectures as lectures,
+              c.price,
+              COALESCE(e.student_count, 0) as studentCount
+       FROM COURSE_INSTRUCTORS ci
+       JOIN COURSES c ON c.course_id = ci.course_id
+       LEFT JOIN (
+         SELECT course_id, COUNT(*) as student_count
+         FROM ENROLLMENTS
+         GROUP BY course_id
+       ) e ON e.course_id = c.course_id
+       WHERE ci.instructor_id = ?
+       ORDER BY c.course_name`,
+      [id],
+    );
+
+    return {
+      instructor,
+      stats: {
+        courseCount: Number(statsRow?.courseCount || 0),
+        studentCount: Number(statsRow?.studentCount || 0),
+        revenue: Number(statsRow?.revenue || 0),
+        avgRating: null,
+      },
+      revenueByCourse,
+      coursesByLevel: coursesByLevel.map((row: any) => ({ level: Number(row.level), count: Number(row.count) })),
+      courses,
     };
   }
 }

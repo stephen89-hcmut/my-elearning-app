@@ -16,9 +16,12 @@ import { SearchOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { getStudents } from '@/api/courses';
 import { Student } from '@/types';
+import { StudentDetailModal } from '@/components';
 
 const StudentsPage: React.FC = () => {
   const [studentsSearch, setStudentsSearch] = useState('');
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<number | undefined>(undefined);
 
   // Fetch students from API
   const {
@@ -102,6 +105,10 @@ const StudentsPage: React.FC = () => {
       width: 140,
       render: (_: any, record: Student) => (
         <Space size="small">
+          <Button size="small" onClick={() => {
+            setSelectedStudentId(record.studentId);
+            setDetailVisible(true);
+          }}>View</Button>
           <Button size="small" onClick={() => message.info(`Edit student #${record.studentId}`)}>Edit</Button>
           <Popconfirm
             title="Delete Student"
@@ -147,6 +154,12 @@ const StudentsPage: React.FC = () => {
               columns={studentColumns as any}
               dataSource={filteredStudents}
               rowKey="studentId"
+              onRow={(record) => ({
+                onClick: () => {
+                  setSelectedStudentId(record.studentId);
+                  setDetailVisible(true);
+                },
+              })}
               pagination={{
                 pageSize: 10,
                 showSizeChanger: true,
@@ -157,6 +170,15 @@ const StudentsPage: React.FC = () => {
           </div>
         </Spin>
       </Card>
+
+      <StudentDetailModal
+        visible={detailVisible}
+        studentId={selectedStudentId}
+        onClose={() => {
+          setDetailVisible(false);
+          setSelectedStudentId(undefined);
+        }}
+      />
     </div>
   );
 };

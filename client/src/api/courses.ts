@@ -1,6 +1,6 @@
 // src/api/courses.ts
 import axios from 'axios';
-import { Course, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic, Student, Instructor, DashboardStats, MonthlyRevenue } from '@/types';
+import { Course, CourseDetail, CreateCourseDto, UpdateCourseDto, PaginatedResponse, Topic, Student, Instructor, DashboardStats, MonthlyRevenue, StudentDetail, InstructorDetail } from '@/types';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -51,6 +51,16 @@ export const getCourseById = async (courseId: number): Promise<Course> => {
     return response.data;
   } catch (error) {
     console.error('Error fetching course:', error);
+    throw error;
+  }
+};
+
+export const getCourseDetail = async (courseId: number): Promise<CourseDetail> => {
+  try {
+    const response = await apiClient.get(`/courses/${courseId}/detail`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching course detail:', error);
     throw error;
   }
 };
@@ -113,6 +123,16 @@ export const getStudents = async (
   }
 };
 
+export const getStudentDetail = async (id: number): Promise<StudentDetail> => {
+  try {
+    const response = await apiClient.get(`/users/students/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching student detail:', error);
+    throw error;
+  }
+};
+
 // ======== INSTRUCTORS API ========
 export const getInstructors = async (
   page: number = 1,
@@ -125,6 +145,16 @@ export const getInstructors = async (
     return response.data;
   } catch (error) {
     console.error('Error fetching instructors:', error);
+    throw error;
+  }
+};
+
+export const getInstructorDetail = async (id: number): Promise<InstructorDetail> => {
+  try {
+    const response = await apiClient.get(`/users/instructors/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching instructor detail:', error);
     throw error;
   }
 };

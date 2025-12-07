@@ -13,6 +13,7 @@ const CoursesPage: React.FC = () => {
   const [formModalVisible, setFormModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [selectedCourseId, setSelectedCourseId] = useState<number | undefined>(undefined);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -88,11 +89,8 @@ const CoursesPage: React.FC = () => {
   };
 
   const handleView = (courseId: number) => {
-    const course = coursesData?.data.find((c) => c.courseId === courseId);
-    if (course) {
-      setSelectedCourse(course);
-      setDetailModalVisible(true);
-    }
+    setSelectedCourseId(courseId);
+    setDetailModalVisible(true);
   };
 
   const handleDelete = (courseId: number) => {
@@ -157,13 +155,13 @@ const CoursesPage: React.FC = () => {
 
       <CourseDetailModal
         visible={detailModalVisible}
-        course={selectedCourse}
-        loading={false}
-        onEdit={() => handleEdit(selectedCourse.courseId)}
-        onDelete={() => handleDelete(selectedCourse.courseId)}
+        courseId={selectedCourseId}
+        onEdit={(id) => handleEdit(id)}
+        onDelete={(id) => handleDelete(id)}
         onCancel={() => {
           setDetailModalVisible(false);
           setSelectedCourse(null);
+          setSelectedCourseId(undefined);
         }}
       />
     </div>
